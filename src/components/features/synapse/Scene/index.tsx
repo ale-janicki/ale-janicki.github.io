@@ -3,6 +3,7 @@ import { Canvas } from '@react-three/fiber'
 import { BranchCard } from '@/components/features/synapse/BranchCard'
 import { CameraRig } from '@/components/features/synapse/CameraRig'
 import { Caption } from '@/components/features/synapse/Caption'
+import { ContactPanel } from '@/components/features/synapse/ContactPanel'
 import { DomainLabel } from '@/components/features/synapse/DomainLabel'
 import { Milestone } from '@/components/features/synapse/Milestone'
 import { Network } from '@/components/features/synapse/Network'
@@ -13,6 +14,7 @@ import { domains } from '@/content/domains'
 import { experience } from '@/content/experience'
 import { buildNetwork } from '@/lib/synapse/buildNetwork'
 import { domainRegion } from '@/lib/synapse/brain'
+import type { FlightRequest } from '@/lib/synapse/flight'
 import { MAX_DOMAINS, MAX_MILESTONES } from '@/lib/synapse/length'
 import { CAMERA_FOV, createFrame, createTimeline } from '@/lib/synapse/timeline'
 import type { Project } from '@/types/project'
@@ -26,6 +28,7 @@ interface SceneProps {
   isMobile: boolean
   branches: Project[]
   progressRef: RefObject<number>
+  flightRef: RefObject<FlightRequest | null>
   activeId: string | null
   nav: FlightNavConfig
   onSelect: (id: string) => void
@@ -42,6 +45,7 @@ export default function Scene({
   isMobile,
   branches,
   progressRef,
+  flightRef,
   activeId,
   nav,
   onSelect,
@@ -77,6 +81,7 @@ export default function Scene({
           timeline={timeline}
           frameRef={frameRef}
           progressRef={progressRef}
+          flightRef={flightRef}
           focus={focus}
           animated={animated}
         />
@@ -142,12 +147,15 @@ export default function Scene({
                 </TechLabel>
               )),
             )}
-            <Caption position={[0, -network.extent.y * 1.02, 0]} frameRef={frameRef}
+            <Caption
+              position={[0, -network.extent.y * 1.02, 0]}
+              frameRef={frameRef}
               nav={nav}
               navIndex={BRAIN_ACT}
             >
               Everything I build connects.
             </Caption>
+            <ContactPanel frameRef={frameRef} nav={nav} navIndex={nav.acts.length - 1} />
           </>
         )}
       </Canvas>

@@ -32,6 +32,9 @@ const FAN_BOTTOM_MOBILE = 0.5
 const FAN_SPAN_MOBILE = 1.36
 const FAN_LABEL_HALF = 18
 const WIDE_DIRECTION = new Vector3(-0.08, 0.28, 1).normalize()
+const CONTACT_DIRECTION = new Vector3(0.62, 0.2, 0.78).normalize()
+const CONTACT_COLUMN = 0.27
+const CONTACT_ROOM = 0.56
 const CHASE_BACK = 1.1
 const CHASE_LEAD = 0.8
 const CHASE_LIFT = 0.35
@@ -64,6 +67,7 @@ export interface Frame {
   domains: number
   tips: number
   caption: number
+  contact: number
   hero: Float32Array
   cards: Float32Array
   techs: Float32Array
@@ -106,6 +110,7 @@ export function createFrame(): Frame {
     domains: 0,
     tips: 0,
     caption: 0,
+    contact: 0,
     hero: new Float32Array(HERO_SLOTS).fill(-1),
     cards: new Float32Array(MAX_BRANCHES),
     techs: new Float32Array(MAX_BRANCHES * MAX_TECHS),
@@ -161,11 +166,13 @@ export function createTimeline(network: NetworkLayout): Timeline {
   const endTangents = branches.map((branch) => branch.curve.getTangent(1))
   let captionWindow: Window = [0, 0, 0, 0]
   let domainWindow: Window = [0, 0, 0, 0]
+  let contactWindow: [number, number] = [0, 0]
   let tipsWindow: Window = [0, 0, 0, 0]
   const effects = {
     landing: [0, 0],
     open: [0, 0],
     inside: [0, 0],
+    outside: [0, 0],
   }
   let cursor = 0
 
@@ -228,6 +235,22 @@ export function createTimeline(network: NetworkLayout): Timeline {
       )
     out.shiftX = 0
     out.shiftY = 0
+  }
+
+  const contactPose: PoseFn = (out, view) => {
+    const landscape = view.aspect >= 1
+    const height = view.width / view.aspect
+    const span = Math.min(view.width, CONTENT_MAX)
+    const room = landscape ? span * CONTACT_ROOM : view.width - 2 * EDGE
+    const available = landscape ? height : height * 0.46
+    const scale = Math.min(
+      room / (2 * extent.x * WIDE_MARGIN),
+      available / (2 * extent.y * WIDE_MARGIN),
+    )
+    out.look.set(0, 0, 0)
+    out.position.copy(CONTACT_DIRECTION).multiplyScalar(height / 2 / (scale * TAN_HALF) + extent.z)
+    out.shiftX = landscape ? columnShift(view, CONTACT_COLUMN) : 0
+    out.shiftY = landscape ? 0 : 0.34
   }
 
   const holdOffset = (index: number, view: View, out: Vector3): Vector3 => {
@@ -312,20 +335,28 @@ export function createTimeline(network: NetworkLayout): Timeline {
     const before: PoseFn = parent ? (out, view) => holdPose(index - 1, out, view) : widePose
     const end: PoseFn = (out, view) => holdPose(index, out, view)
     enters.push(push(LENGTHS.enter, before, end, !parent, index))
-    const pad = index === branches.length - 1 ? LENGTHS.endPad : 0
-    holds.push(push(LENGTHS.hold + pad, end, end))
+    holds.push(push(LENGTHS.hold, end, end))
   })
+  const last = branches.length - 1
+  const leave: PoseFn = last >= 0 ? (out, view) => holdPose(last, out, view) : widePose
+  const toContact = push(LENGTHS.toContact, leave, contactPose, true)
+  const contactHold = push(LENGTHS.contactHold, contactPose, contactPose)
+  effects.outside = [
+    toContact.start + 0.1 * LENGTHS.toContact,
+    toContact.start + 0.7 * LENGTHS.toContact,
+  ]
+  contactWindow = [toContact.start + 0.55 * LENGTHS.toContact, contactHold.start + 0.1]
   if (enters.length > 0) {
     effects.inside = [enters[0].start + 0.1 * LENGTHS.enter, enters[0].start + 0.5 * LENGTHS.enter]
   }
   enters.forEach((enter, index) => {
-    const next = holds[index + 1] ? enters[index + 1] : null
+    const next = holds[index + 1] ? enters[index + 1] : toContact
     const finish = holds[index].end
     cardWindows[index] = [
       enter.start + 0.72 * (enter.end - enter.start),
       enter.end,
-      next ? finish : finish + 0.01,
-      next ? finish + 0.35 * (next.end - next.start) : finish + 1,
+      finish,
+      finish + 0.35 * (next.end - next.start),
     ]
   })
 
@@ -344,7 +375,9 @@ export function createTimeline(network: NetworkLayout): Timeline {
 
     frame.hero.fill(-1)
     frame.techs.fill(0)
-    const inside = ramp(scroll, effects.inside[0], effects.inside[1])
+    const inside =
+      ramp(scroll, effects.inside[0], effects.inside[1]) *
+      (1 - ramp(scroll, effects.outside[0], effects.outside[1]))
     if (segment.route >= 0) {
       const index = segment.route
       const route = routes[index]
@@ -393,6 +426,7 @@ export function createTimeline(network: NetworkLayout): Timeline {
     }
     frame.domains = inWindow(scroll, domainWindow)
     frame.caption = inWindow(scroll, captionWindow)
+    frame.contact = ramp(scroll, contactWindow[0], contactWindow[1])
   }
 
   const focus: Timeline['focus'] = (branch, view, out) => {

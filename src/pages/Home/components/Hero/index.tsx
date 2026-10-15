@@ -27,6 +27,7 @@ interface HeroProps {
   brandRef: RefObject<HTMLAnchorElement | null>
   dockRef: RefObject<HTMLSpanElement | null>
   nav: FlightNavConfig
+  brandExit: [number, number]
   onMeet: () => void
 }
 
@@ -69,7 +70,14 @@ function Details({ profile }: { profile: Profile }) {
   )
 }
 
-function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps, 'full'>) {
+function FlightHero({
+  profile,
+  brandRef,
+  dockRef,
+  nav,
+  brandExit,
+  onMeet,
+}: Omit<HeroProps, 'full'>) {
   const stageRef = useRef<HTMLDivElement>(null)
   const slotRef = useRef<HTMLDivElement>(null)
   const restRef = useRef<HTMLDivElement>(null)
@@ -87,6 +95,8 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
     let left = -1
     let away = false
     let paired = false
+    let exited = -1
+    let hidden = false
     const measure = () => {
       card.style.width = `${slot.offsetWidth}px`
       const height = card.offsetHeight
@@ -107,7 +117,7 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
       card.style.setProperty('--s2', String(scale))
       card.style.setProperty('--ready', '1')
     }
-    const apply = (scroll: number) => {
+    const apply = (scroll: number, progress: number) => {
       const svh = scroll / stage.clientHeight
       const present = Math.round(clamp01((svh - LENGTHS.landing) / LENGTHS.intro) * PRESENT_STEPS)
       const leave = Math.round(
@@ -130,6 +140,18 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
         away = gone
         stage.dataset.stage = gone ? 'presenting' : 'landing'
       }
+      const exit = Math.round(
+        clamp01((progress - brandExit[0]) / (brandExit[1] - brandExit[0])) * PRESENT_STEPS,
+      )
+      if (exit !== exited) {
+        exited = exit
+        card.style.setProperty('--exit', String(smooth(exit / PRESENT_STEPS)))
+        const gone = exit >= PRESENT_STEPS
+        if (gone !== hidden) {
+          hidden = gone
+          card.dataset.exit = gone ? 'on' : 'off'
+        }
+      }
       const pairing = present >= PRESENT_STEPS * PAIR_ON && leave <= PRESENT_STEPS * PAIR_OFF
       if (pairing !== paired) {
         paired = pairing
@@ -141,9 +163,9 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
       end: 'max',
       onRefresh: (self) => {
         measure()
-        apply(self.scroll())
+        apply(self.scroll(), self.progress)
       },
-      onUpdate: (self) => apply(self.scroll()),
+      onUpdate: (self) => apply(self.scroll(), self.progress),
     })
     let disposed = false
     void document.fonts.ready.then(() => {
@@ -153,7 +175,7 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
       disposed = true
       trigger.kill()
     }
-  }, [brandRef, dockRef])
+  }, [brandRef, dockRef, brandExit])
 
   return (
     <div className={styles.pin}>
@@ -179,7 +201,7 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
   )
 }
 
-export function Hero({ profile, full, brandRef, dockRef, nav, onMeet }: HeroProps) {
+export function Hero({ profile, full, brandRef, dockRef, nav, brandExit, onMeet }: HeroProps) {
   if (!full) {
     return (
       <Section id="top" label="Introduction" full={false} mobileEnd>
@@ -199,6 +221,13 @@ export function Hero({ profile, full, brandRef, dockRef, nav, onMeet }: HeroProp
     )
   }
   return (
-    <FlightHero profile={profile} brandRef={brandRef} dockRef={dockRef} nav={nav} onMeet={onMeet} />
+    <FlightHero
+      profile={profile}
+      brandRef={brandRef}
+      dockRef={dockRef}
+      nav={nav}
+      brandExit={brandExit}
+      onMeet={onMeet}
+    />
   )
 }

@@ -17,14 +17,17 @@ export const LENGTHS = {
   wideHold: 0.8,
   enter: 2.4,
   hold: 0.9,
-  endPad: 0.4,
+  toContact: 1.4,
+  contactHold: 1,
 }
 
 export const PRELUDE = LENGTHS.landing + LENGTHS.intro + LENGTHS.presentation + LENGTHS.toWide
 
 export function timelineLength(branchCount: number): number {
   const perBranch = LENGTHS.enter + LENGTHS.hold
-  return PRELUDE + LENGTHS.wideHold + perBranch * branchCount + LENGTHS.endPad
+  return (
+    PRELUDE + LENGTHS.wideHold + perBranch * branchCount + LENGTHS.toContact + LENGTHS.contactHold
+  )
 }
 
 export interface Act {
@@ -39,6 +42,7 @@ export function flightActs(names: string[]): Act[] {
   const wideHoldStart = PRELUDE
   const firstEnter = wideHoldStart + LENGTHS.wideHold
   const perBranch = LENGTHS.enter + LENGTHS.hold
+  const contactStart = firstEnter + perBranch * names.length + LENGTHS.toContact
   return [
     { label: 'Meet', begin: 0, stop: 0, still: [0, LENGTHS.landing] },
     {
@@ -62,5 +66,11 @@ export function flightActs(names: string[]): Act[] {
         still: [holdStart, holdStart + LENGTHS.hold] as [number, number],
       }
     }),
+    {
+      label: 'Contact',
+      begin: contactStart - LENGTHS.toContact * 0.5,
+      stop: contactStart + 0.3,
+      still: [contactStart, contactStart + LENGTHS.contactHold],
+    },
   ]
 }
