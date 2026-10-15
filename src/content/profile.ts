@@ -9,20 +9,28 @@ export interface ContactLink {
   href: string
 }
 
+export interface Fact {
+  label: string
+  value: string
+}
+
 export interface Profile {
   name: string
+  photo: string
   title: string
   location: string
   pitch: string
   summary: string
   current: string
+  facts: Fact[]
   stack: StackGroup[]
   contacts: ContactLink[]
 }
 
 export const profile: Profile = {
   name: 'Alessandro Janicki',
-  title: 'Computer Engineer · Full Stack Developer',
+  photo: '/img/alessandro.jpg',
+  title: 'Full Stack Engineer · AI-powered products',
   location: 'São Paulo, Brazil',
   pitch:
     'I ship products end to end, from React front ends to Java, Python and Node.js back ends, with AI built into production systems.',
@@ -30,6 +38,10 @@ export const profile: Profile = {
     'Computer Engineer and full stack developer who ships products end to end, from React and React Native front ends to Java, Python and Node.js back ends, with AI (Claude, OpenAI, agents) built into production systems.',
   current:
     'Since September 2025 I build multi-portal, multi-tenant, white-label platforms as a contractor at Moonxi.',
+  facts: [
+    { label: 'Education', value: 'B.Sc. Computer Engineering, Universidade Anhembi Morumbi' },
+    { label: 'Languages', value: 'Portuguese (native) · English (advanced) · Spanish (basic)' },
+  ],
   stack: [
     { label: 'Frontend', items: ['React', 'Next.js', 'React Native (Expo)', 'TypeScript'] },
     { label: 'Backend', items: ['Java (Spring Boot)', 'Python (FastAPI)', 'Node.js'] },
