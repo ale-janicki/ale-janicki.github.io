@@ -154,3 +154,17 @@
     gap: var(--space-1);
   }
 }
+
+.titlePart {
+  white-space: nowrap;
+
+  @media (max-width: 767px) {
+    display: block;
+  }
+}
+
+.titleDot {
+  @media (max-width: 767px) {
+    display: none;
+  }
+}

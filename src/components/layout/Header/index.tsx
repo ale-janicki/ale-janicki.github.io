@@ -44,7 +44,14 @@ export function Header({
             />
             <span className={styles.meta}>
               <h1 className={styles.cardName}>{profile.name}</h1>
-              <p className={styles.cardTitle}>{profile.title}</p>
+              <p className={styles.cardTitle}>
+                {profile.title.split(' · ').map((part, index) => (
+                  <span key={part} className={styles.titlePart}>
+                    {index > 0 && <span className={styles.titleDot}> · </span>}
+                    {part}
+                  </span>
+                ))}
+              </p>
             </span>
           </a>
           <span ref={dockRef} className={styles.dock} aria-hidden="true" />
