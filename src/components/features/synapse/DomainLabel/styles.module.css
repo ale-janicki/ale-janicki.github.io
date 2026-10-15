@@ -1,0 +1,51 @@
+.domain {
+  position: relative;
+  isolation: isolate;
+  width: 11rem;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  visibility: hidden;
+  opacity: 0;
+  user-select: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -0.9rem -1.2rem;
+    z-index: -1;
+    background: radial-gradient(closest-side, rgba(3, 4, 10, 0.88), rgba(3, 4, 10, 0));
+  }
+}
+
+.name {
+  font-size: var(--text-xs);
+  color: var(--color-accent-text);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+.items {
+  margin-top: var(--space-1);
+  list-style: none;
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  color: var(--color-text-muted);
+
+  text-shadow:
+    0 0 6px var(--color-bg),
+    0 0 2px var(--color-bg);
+
+  & li {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  & li:not(:last-child)::after {
+    content: ' · ';
+    white-space: pre;
+  }
+
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
