@@ -1,11 +1,7 @@
 .section {
   display: flex;
   align-items: center;
-  padding: var(--space-16) var(--space-4);
-
-  @media (min-width: 768px) {
-    padding: var(--space-16) var(--space-12);
-  }
+  padding: var(--space-16) calc(max(0px, (100% - var(--page-max)) / 2) + var(--inset));
 }
 
 .full {

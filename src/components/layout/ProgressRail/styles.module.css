@@ -116,11 +116,16 @@
 
 @media (max-width: 767px) {
   .label {
+    display: none;
+    white-space: nowrap;
     padding: var(--space-1) var(--space-2);
-    opacity: 0.7;
   }
 
   .item[aria-current='step'] .label {
-    opacity: 1;
+    display: block;
+  }
+
+  .dot {
+    display: block;
   }
 }

@@ -11,7 +11,7 @@ import { useFlightAct } from '@/hooks/useFlightAct'
 import { useFlightScroll } from '@/hooks/useFlightScroll'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useRenderMode } from '@/hooks/useRenderMode'
-import { MAX_BRANCHES, flightActs, timelineLength } from '@/lib/synapse/length'
+import { MAX_BRANCHES, PRELUDE, flightActs, timelineLength } from '@/lib/synapse/length'
 import { Contact } from './components/Contact'
 import { ContactList } from './components/ContactList'
 import { Hero } from './components/Hero'
@@ -21,28 +21,26 @@ import styles from './styles.module.css'
 
 const Scene = lazy(() => import('@/components/features/synapse/Scene'))
 
-const klaus = projects.find((project) => project.branch.visual === 'core')
-const branches = projects
-  .filter((project) => project.branch.visual !== 'core')
-  .slice(0, MAX_BRANCHES)
+const branches = projects.slice(0, MAX_BRANCHES)
 const flightLength = timelineLength(branches.length)
-const acts = flightActs(branches.length)
-const trackHeight = `calc(${flightLength - 1} * 100svh)`
+const acts = flightActs(branches.map((project) => project.name))
+const meetStop = acts[1].stop / flightLength
+const trackHeight = `calc(${flightLength - PRELUDE + 1} * 100svh)`
 
 export function HomePage() {
   const [activeId, setActiveId] = useState<string | null>(null)
   const [projectsOpen, setProjectsOpen] = useState(false)
   const [contactOpen, setContactOpen] = useState(false)
   const [sceneFailed, setSceneFailed] = useState(false)
-  const mode = useRenderMode(sceneFailed || !klaus)
+  const mode = useRenderMode(sceneFailed)
   const isMobile = useIsMobile()
   const progressRef = useRef(0)
-  const trackRef = useRef<HTMLDivElement>(null)
+  const brandRef = useRef<HTMLAnchorElement>(null)
+  const dockRef = useRef<HTMLSpanElement>(null)
   const flight = mode === 'flight'
 
   const scrollTo = useFlightScroll(
     progressRef,
-    trackRef,
     flight,
     activeId !== null || projectsOpen || contactOpen,
   )
@@ -59,12 +57,14 @@ export function HomePage() {
   const handleCloseContact = useCallback(() => setContactOpen(false), [])
   const handleOpenContact = useCallback(() => setContactOpen(true), [])
   const handleSceneError = useCallback(() => setSceneFailed(true), [])
+  const handleMeet = useCallback(() => scrollTo(meetStop), [scrollTo])
+  const handleHome = useCallback(() => scrollTo(0), [scrollTo])
 
   const activeProject = projects.find((project) => project.id === activeId) ?? null
 
   return (
     <>
-      {mode === 'fallback' || !klaus ? (
+      {mode === 'fallback' ? (
         <CssNetwork />
       ) : (
         <ErrorBoundary fallback={<CssNetwork />} onError={handleSceneError}>
@@ -73,7 +73,6 @@ export function HomePage() {
               animated={flight}
               isMobile={isMobile}
               branches={branches}
-              klaus={klaus}
               progressRef={progressRef}
               activeId={activeId}
               onSelect={handleSelect}
@@ -83,37 +82,37 @@ export function HomePage() {
       )}
 
       <Header
-        name={profile.name}
+        profile={profile}
+        flight={flight}
+        brandRef={brandRef}
+        dockRef={dockRef}
+        onHome={handleHome}
         onOpenProjects={handleOpenProjects}
         onOpenContact={handleOpenContact}
         projectsDisabled={activeId !== null}
       />
 
-      {flight && (
-        <ProgressRail acts={acts} active={act} length={flightLength} onJump={scrollTo} />
-      )}
+      {flight && <ProgressRail acts={acts} active={act} length={flightLength} onJump={scrollTo} />}
 
       <main className={styles.main}>
-        <Hero profile={profile} full={flight} />
+        <Hero
+          profile={profile}
+          full={flight}
+          brandRef={brandRef}
+          dockRef={dockRef}
+          onMeet={handleMeet}
+        />
         {flight ? (
           <div
-            ref={trackRef}
             className={styles.track}
             style={{ height: trackHeight }}
             aria-hidden="true"
           />
         ) : (
-          <ProjectsSection projects={projects} onSelect={handleSelect} />
-        )}
-        {flight ? (
           <>
-            <div className={styles.spacer} aria-hidden="true" />
-            <div className={styles.finale} data-shown={act === acts.length - 1}>
-              <Contact profile={profile} full klaus={klaus} floating onOpenKlaus={handleSelect} />
-            </div>
+            <ProjectsSection projects={projects} onSelect={handleSelect} />
+            <Contact profile={profile} />
           </>
-        ) : (
-          <Contact profile={profile} full={false} onOpenKlaus={handleSelect} />
         )}
       </main>
 

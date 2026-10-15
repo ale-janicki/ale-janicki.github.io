@@ -1,6 +1,6 @@
 .eyebrow {
   font-size: var(--text-xs);
-  color: var(--branch, var(--color-accent-text));
+  color: var(--color-accent-text);
   text-transform: uppercase;
   letter-spacing: 0.14em;
 }
@@ -12,38 +12,9 @@
   letter-spacing: -0.025em;
 }
 
-.highlight {
-  margin-top: var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--branch);
-  letter-spacing: 0.06em;
-}
-
-.klaus {
-  margin-bottom: var(--space-6);
-}
-
-.tagline {
-  margin-top: var(--space-1);
-  color: var(--color-text-muted);
-}
-
-.description {
-  margin-top: var(--space-3);
-  line-height: 1.6;
-
-  @media (max-width: 767px) {
-    font-size: var(--text-sm);
-    line-height: 1.5;
-  }
-}
-
-.open {
-  margin-top: var(--space-4);
-}
-
 .links {
   display: grid;
+  margin-top: var(--space-5);
   gap: var(--space-3);
   list-style: none;
 

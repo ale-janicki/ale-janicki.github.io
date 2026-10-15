@@ -7,32 +7,3 @@
 .track {
   pointer-events: none;
 }
-
-.spacer {
-  height: 100svh;
-}
-
-.finale {
-  position: fixed;
-  inset: 0;
-  overflow-y: auto;
-  pointer-events: none;
-  visibility: hidden;
-  opacity: 0;
-  transform: translateY(2.5rem);
-  transition:
-    opacity 600ms ease,
-    transform 600ms ease,
-    visibility 0s linear 600ms;
-
-  &[data-shown='true'] {
-    visibility: visible;
-    opacity: 1;
-    transform: none;
-    transition-delay: 0s;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    transition: none;
-  }
-}
