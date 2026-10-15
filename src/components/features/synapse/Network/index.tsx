@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { AdditiveBlending, Color, Vector2, Vector3, type ShaderMaterial } from 'three'
+import { AdditiveBlending, Vector2, Vector3, type ShaderMaterial } from 'three'
 import type { NetworkLayout } from '@/lib/synapse/buildNetwork'
-import { HERO_SLOTS, MAX_BRANCHES, MAX_LINKS, MAX_MILESTONES } from '@/lib/synapse/length'
+import { HERO_SLOTS, MAX_BRANCHES } from '@/lib/synapse/length'
 import type { Frame } from '@/lib/synapse/timeline'
 import {
   impulseFragment,
@@ -16,33 +16,29 @@ import {
 interface NetworkProps {
   network: NetworkLayout
   frameRef: RefObject<Frame>
-  klausColor: string
   isMobile: boolean
 }
 
-function createUniforms(klausColor: string, isMobile: boolean) {
+function createUniforms(isMobile: boolean) {
   return {
     uTime: { value: 0 },
     uOpen: { value: 0 },
+    uPaths: { value: 0 },
     uInside: { value: 0 },
-    uLink: { value: 0 },
-    uKlaus: { value: 0 },
     uPixelRatio: { value: 1 },
     uAspect: { value: 1 },
     uCursor: { value: new Vector2(10, 10) },
-    uKlausColor: { value: new Color(klausColor) },
     uFocus: { value: new Vector3() },
     uNeuronSize: { value: isMobile ? 26 : 28 },
     uImpulseSize: { value: isMobile ? 30 : 32 },
-    uNodeGlow: { value: new Float32Array(MAX_BRANCHES + MAX_MILESTONES) },
+    uNodeGlow: { value: new Float32Array(MAX_BRANCHES) },
     uHero: { value: new Float32Array(HERO_SLOTS).fill(-1) },
-    uLinkGlow: { value: new Float32Array(MAX_LINKS) },
   }
 }
 
-export function Network({ network, frameRef, klausColor, isMobile }: NetworkProps) {
+export function Network({ network, frameRef, isMobile }: NetworkProps) {
   const dpr = useThree((state) => state.viewport.dpr)
-  const [uniforms] = useState(() => createUniforms(klausColor, isMobile))
+  const [uniforms] = useState(() => createUniforms(isMobile))
   const neuronRef = useRef<ShaderMaterial>(null)
   const lineRef = useRef<ShaderMaterial>(null)
   const impulseRef = useRef<ShaderMaterial>(null)
@@ -55,9 +51,8 @@ export function Network({ network, frameRef, klausColor, isMobile }: NetworkProp
       if (!material) continue
       material.uniforms.uNeuronSize.value = isMobile ? 26 : 28
       material.uniforms.uImpulseSize.value = isMobile ? 30 : 32
-      material.uniforms.uKlausColor.value.set(klausColor)
     }
-  }, [isMobile, klausColor])
+  }, [isMobile])
 
   useEffect(() => {
     for (const material of [neuronRef.current, lineRef.current, impulseRef.current]) {
@@ -74,13 +69,10 @@ export function Network({ network, frameRef, klausColor, isMobile }: NetworkProp
       u.uOpen.value = frame.open
       u.uInside.value = frame.inside
       u.uFocus.value.copy(frame.pose.look)
-      u.uLink.value = frame.link
-      u.uKlaus.value = frame.klaus
+      u.uPaths.value = frame.paths
       u.uAspect.value = size.width / size.height
       u.uCursor.value.copy(frame.cursor)
       u.uNodeGlow.value.set(frame.cards)
-      u.uNodeGlow.value.set(frame.milestoneGlow, MAX_BRANCHES)
-      u.uLinkGlow.value.set(frame.linkGlow)
       u.uHero.value.set(frame.hero)
     }
   })

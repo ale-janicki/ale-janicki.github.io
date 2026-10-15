@@ -1,4 +1,4 @@
-import { Color, CubicBezierCurve3, Vector2, Vector3 } from 'three'
+import { Color, CubicBezierCurve3, MathUtils, Vector3 } from 'three'
 import type { Project } from '@/types/project'
 import {
   BRAIN_EXTENT,
@@ -8,10 +8,20 @@ import {
   pathwayRegion,
   sampleBrain,
   sampleInterior,
+  sideOf,
   type BrainNeuron,
 } from './brain'
-import { LINK_LAYER_STEP, MAX_BRANCHES, MAX_MILESTONES } from './length'
+import {
+  MAX_BRANCHES,
+  MAX_MILESTONES,
+  MAX_TECHS,
+  MILESTONE_FAN,
+  MILESTONE_FAN_MOBILE,
+  MILESTONE_REACH,
+  MILESTONE_REACH_MOBILE,
+} from './length'
 import { createRandom, gaussian, type Random } from './random'
+import { HOLD_BACK, HOLD_LIFT, HOLD_SIDE } from './timeline'
 
 export const TRAIL_TICKS = 4
 export const RHYTHM_PERIOD = 1.6
@@ -20,8 +30,7 @@ export const RHYTHM_RUN = 0.9
 const SEED = 20241015
 const LAYER_CORE = 0
 const LAYER_NETWORK = 1
-const LAYER_LINK = 2
-const LAYER_ME = 3
+const LAYER_ME = 2
 const LINK_RADIUS = 0.3
 const LINKS_PER_NEURON = 3
 const INTERIOR_LINK_RADIUS = 0.42
@@ -30,29 +39,43 @@ const ME_PERIOD = 2.6
 const ME_DENDRITES = 9
 const ME_AXON_LENGTH = 1.6
 const ME_AXON_DIRECTION = new Vector3(-0.45, 0.1, -0.88).normalize()
-const MILESTONE_REACH = new Vector2(0.6, 1.3)
-const MILESTONE_REACH_MOBILE = new Vector2(0.35, 0.8)
-const MILESTONE_FAN = 1.05
-const MILESTONE_SIZE = 3.2
-const MILESTONE_NEURON_SCALE = 2.2
-const LINK_LABEL_ITEMS = 3
-const LINK_FAINT_ALPHA = 0.16
+const MILESTONE_SIZE = 3
+const MILESTONE_NEURON_SCALE = 2.4
+const MILESTONE_HALO_SCALE = 7
 const HERO_UP = new Vector3(0, 1, 0)
 const PATH_HOPS = 3
 const NODE_SCALE = 5
 const TRUNK_SEGMENTS = 44
 const TWIG_SEGMENTS = 12
-const LINK_SEGMENTS = 44
-const PATHWAY_START = 0.2
+const JUNCTION_AT = 0.58
+const ME_BLEND = 0.4
+const JUNCTION_RING = 6
+const JUNCTION_RADIUS = 0.17
+const TECH_START = 0.16
+const TECH_END = 0.66
+const TECH_REACH = 0.52
+const TECH_REACH_MOBILE = 0.28
+const TECH_LIFT = 0.45
+const BEACON_PERIOD = 2.2
+const BEACON_HALO_SCALE = 11
 const PATHWAY_BEND = 0.5
 const TWIG_REACH = 0.3
 const TWIG_LENGTH = 0.35
-const BEAD_SCALE = 0.55
-const TWIG_POSITIONS = [0.16, 0.28, 0.4, 0.52, 0.64, 0.76, 0.86, 0.93]
+const BEAD_SCALE = 0.8
+const TWIG_POSITIONS = [0.12, 0.24, 0.36, 0.5, 0.64, 0.78, 0.88, 0.94]
 const RING_SIZE = 12
 const CLUSTER_SIZE = 4
 const CLUSTER_RADIUS = 0.42
+const DETECT_HALF = 0.3
+const DETECT_ARM = 0.2
+const DETECT_CORNERS: [number, number][] = [
+  [-1, -1],
+  [1, -1],
+  [1, 1],
+  [-1, 1],
+]
 const HERO_TRAIL_STEP = 0.016
+const TIP_TRAIL_STEP = 0.045
 const IMPULSE_TRAIL_STEP = 0.01
 const WHITE = new Color('#ffffff')
 const BRANCH_NEURON_LIGHTEN = 0.2
@@ -70,6 +93,7 @@ interface Detail {
   maxLinks: number
   coreImpulses: number
   trunkNeurons: number
+  techReach: number
 }
 
 const DESKTOP_DETAIL: Detail = {
@@ -78,6 +102,7 @@ const DESKTOP_DETAIL: Detail = {
   maxLinks: 3200,
   coreImpulses: 110,
   trunkNeurons: 40,
+  techReach: TECH_REACH,
 }
 
 const MOBILE_DETAIL: Detail = {
@@ -86,6 +111,7 @@ const MOBILE_DETAIL: Detail = {
   maxLinks: 1200,
   coreImpulses: 44,
   trunkNeurons: 22,
+  techReach: TECH_REACH_MOBILE,
 }
 
 export interface NeuronBuffers {
@@ -112,18 +138,21 @@ export interface ImpulseBuffers {
   shape: Float32Array
 }
 
+export interface TechAnchor {
+  label: string
+  position: Vector3
+  at: number
+  side: 1 | -1
+}
+
 export interface BranchGeometry {
   curve: CubicBezierCurve3
   node: Vector3
-  tangent: Vector3
   project: Project
-}
-
-export interface LinkGeometry {
-  from: number
-  to: number
-  shared: string[]
-  midpoint: Vector3
+  parent: number
+  joint: Vector3 | null
+  junction: number
+  techs: TechAnchor[]
 }
 
 export interface NetworkLayout {
@@ -131,7 +160,6 @@ export interface NetworkLayout {
   lines: LineBuffers
   impulses: ImpulseBuffers
   branches: BranchGeometry[]
-  links: LinkGeometry[]
   milestones: Vector3[]
   extent: Vector3
   me: Vector3
@@ -163,6 +191,7 @@ interface Builder {
     alpha: number,
     layer: number,
     segments: number,
+    blend?: (t: number) => number,
   ) => void
   addImpulse: (points: Vector3[], color: Color, options: ImpulseOptions) => void
   finish: () => Pick<NetworkLayout, 'neurons' | 'lines' | 'impulses'>
@@ -199,7 +228,15 @@ function createBuilder(random: Random): Builder {
     neuron.meta.push(random(), node, pulse)
   }
 
-  const addEdge: Builder['addEdge'] = (points, colorFrom, colorTo, alpha, layer, segments) => {
+  const addEdge: Builder['addEdge'] = (
+    points,
+    colorFrom,
+    colorTo,
+    alpha,
+    layer,
+    segments,
+    blend,
+  ) => {
     curve.v0.copy(points[0])
     curve.v1.copy(points[1])
     curve.v2.copy(points[2])
@@ -207,7 +244,8 @@ function createBuilder(random: Random): Builder {
     for (let i = 0; i < segments; i++) {
       curve.getPoint(i / segments, from)
       curve.getPoint((i + 1) / segments, to)
-      tint.copy(colorFrom).lerp(colorTo, (i + 0.5) / segments)
+      const t = (i + 0.5) / segments
+      tint.copy(colorFrom).lerp(colorTo, blend ? blend(t) : t)
       line.position.push(from.x, from.y, from.z, to.x, to.y, to.z)
       line.color.push(tint.r, tint.g, tint.b, alpha, tint.r, tint.g, tint.b, alpha)
       line.layer.push(layer, layer)
@@ -524,7 +562,7 @@ function addMilestones(
   const anchors: Vector3[] = []
   for (let index = 0; index < total; index++) {
     const spread = total > 1 ? 1 - (2 * index) / (total - 1) : 0
-    const angle = spread * MILESTONE_FAN
+    const angle = spread * (isMobile ? MILESTONE_FAN_MOBILE : MILESTONE_FAN)
     const tip = me
       .clone()
       .addScaledVector(right, Math.cos(angle) * reach.x)
@@ -535,32 +573,43 @@ function addMilestones(
     for (const u of [0.35, 0.65]) {
       builder.addNeuron(new Vector3().lerpVectors(me, tip, u), ME_COLOR, 0.8, LAYER_ME)
     }
-    builder.addNeuron(tip, ME_COLOR, MILESTONE_NEURON_SCALE, LAYER_ME, MAX_BRANCHES + index + 1)
+    builder.addNeuron(tip, ME_HALO_COLOR, MILESTONE_HALO_SCALE, LAYER_ME, 0, ME_PERIOD)
+    builder.addNeuron(tip, ME_COLOR, MILESTONE_NEURON_SCALE, LAYER_ME, 0, ME_PERIOD)
     builder.addImpulse(path, ME_IMPULSE_COLOR, {
       size: MILESTONE_SIZE,
       layer: LAYER_ME,
-      hero: MAX_BRANCHES + index + 1,
-      trailStep: HERO_TRAIL_STEP,
+      period: ME_PERIOD,
+      trailStep: TIP_TRAIL_STEP,
     })
     anchors.push(tip)
   }
   return anchors
 }
 
-function createTrunk(index: number, me: Vector3, random: Random): CubicBezierCurve3 {
+function createTrunk(
+  index: number,
+  start: Vector3,
+  heading: Vector3 | null,
+  random: Random,
+): CubicBezierCurve3 {
   const end = pathwayRegion(index)
-  const start = me.clone().lerp(end, PATHWAY_START)
   const direction = end.clone().sub(start).normalize()
-  const perpendicular = new Vector3().crossVectors(direction, new Vector3(0, 1, 0)).normalize()
-  const bend = (random() < 0.5 ? -1 : 1) * PATHWAY_BEND
-  const first = keepInside(start.clone().lerp(end, 0.33).addScaledVector(perpendicular, bend))
-  const second = keepInside(
-    start
-      .clone()
-      .lerp(end, 0.68)
-      .addScaledVector(perpendicular, -bend * 0.7),
-  )
-  return new CubicBezierCurve3(start, first, second, end)
+  const perpendicular = new Vector3().crossVectors(direction, HERO_UP).normalize()
+  const lean = (bend: number) => {
+    const first = keepInside(start.clone().lerp(end, 0.33).addScaledVector(perpendicular, bend))
+    const second = keepInside(
+      start
+        .clone()
+        .lerp(end, 0.68)
+        .addScaledVector(perpendicular, -bend * 0.7),
+    )
+    return new CubicBezierCurve3(start.clone(), first, second, end.clone())
+  }
+  const sign = random() < 0.5 ? -1 : 1
+  const options = [lean(sign * PATHWAY_BEND), lean(-sign * PATHWAY_BEND)]
+  if (!heading) return options[0]
+  const alignment = (curve: CubicBezierCurve3) => Math.abs(curve.getTangent(0).dot(heading))
+  return alignment(options[0]) <= alignment(options[1]) ? options[0] : options[1]
 }
 
 function addCluster(
@@ -629,6 +678,123 @@ function addRing(
   }
 }
 
+function addDetect(
+  builder: Builder,
+  node: Vector3,
+  tangent: Vector3,
+  color: Color,
+  bright: Color,
+  random: Random,
+): void {
+  const side = sideOf(tangent, new Vector3())
+  const facing = tangent
+    .clone()
+    .multiplyScalar(-HOLD_BACK)
+    .addScaledVector(side, HOLD_SIDE)
+    .addScaledVector(HERO_UP, HOLD_LIFT)
+    .normalize()
+  const right = new Vector3().crossVectors(facing, HERO_UP).normalize()
+  const lift = new Vector3().crossVectors(right, facing).normalize()
+  DETECT_CORNERS.forEach(([sx, sy], i) => {
+    const corner = keepInside(
+      node
+        .clone()
+        .addScaledVector(right, sx * DETECT_HALF)
+        .addScaledVector(lift, sy * DETECT_HALF),
+    )
+    const arms = [
+      corner.clone().addScaledVector(right, -sx * DETECT_ARM),
+      corner.clone().addScaledVector(lift, -sy * DETECT_ARM),
+    ].map((end) => keepInside(end))
+    builder.addNeuron(corner, color, 2.4, LAYER_NETWORK)
+    arms.forEach((end, k) => {
+      const arm = bowedPoints(corner, end, random, 0.02)
+      builder.addEdge(arm, color, color, 0.95, LAYER_NETWORK, TWIG_SEGMENTS)
+      builder.addNeuron(end, color, 1.1, LAYER_NETWORK)
+      builder.addImpulse(k === 0 ? reversed(arm) : arm, bright, {
+        size: 1.1,
+        layer: LAYER_NETWORK,
+        speed: 0.45,
+        phase: (i + k * 0.5) / DETECT_CORNERS.length,
+      })
+    })
+  })
+}
+
+function sharedStack(a: Project, b: Project): string[] {
+  const other = new Set(b.stack.map((item) => item.toLowerCase()))
+  const seen = new Set<string>()
+  return a.stack.filter((item) => {
+    const key = item.toLowerCase()
+    if (!other.has(key) || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+function addBeacon(builder: Builder, node: Vector3, color: Color, index: number): void {
+  builder.addNeuron(node, color, BEACON_HALO_SCALE, LAYER_NETWORK, index + 1, BEACON_PERIOD)
+  builder.addNeuron(node, WHITE, NODE_SCALE * 0.7, LAYER_NETWORK, index + 1, BEACON_PERIOD)
+}
+
+function addJunction(
+  builder: Builder,
+  joint: Vector3,
+  heading: Vector3,
+  colors: [Color, Color],
+): void {
+  const side = new Vector3().crossVectors(heading, HERO_UP).normalize()
+  const lift = new Vector3().crossVectors(side, heading).normalize()
+  const mixed = colors[0].clone().lerp(colors[1], 0.5)
+  builder.addNeuron(joint, mixed.clone().lerp(WHITE, 0.35), NODE_SCALE * 0.8, LAYER_NETWORK)
+  builder.addNeuron(joint, mixed, NODE_SCALE * 1.9, LAYER_NETWORK)
+  for (let i = 0; i < JUNCTION_RING; i++) {
+    const angle = (i / JUNCTION_RING) * Math.PI * 2
+    const p = keepInside(
+      joint
+        .clone()
+        .addScaledVector(side, Math.cos(angle) * JUNCTION_RADIUS)
+        .addScaledVector(lift, Math.sin(angle) * JUNCTION_RADIUS),
+    )
+    builder.addNeuron(p, colors[i % 2], 1.3, LAYER_NETWORK)
+  }
+}
+
+function addTechs(
+  builder: Builder,
+  curve: CubicBezierCurve3,
+  project: Project,
+  shared: string[],
+  colorAt: (u: number) => Color,
+  bright: Color,
+  reach: number,
+  random: Random,
+): TechAnchor[] {
+  const taken = new Set(shared.map((item) => item.toLowerCase()))
+  const own = project.stack.filter((item) => !taken.has(item.toLowerCase())).slice(0, MAX_TECHS)
+  return own.map((label, k) => {
+    const at = TECH_START + ((TECH_END - TECH_START) * (k + 0.5)) / own.length
+    const base = curve.getPointAt(at)
+    const tangent = curve.getTangentAt(at)
+    const side = sideOf(tangent, new Vector3())
+    const lift = new Vector3().crossVectors(side, tangent).normalize()
+    const sign: 1 | -1 = k % 2 === 0 ? 1 : -1
+    const direction = side
+      .clone()
+      .multiplyScalar(sign)
+      .addScaledVector(lift, k % 3 === 1 ? -TECH_LIFT : TECH_LIFT)
+      .normalize()
+    const tip = keepInside(base.clone().addScaledVector(direction, reach))
+    const color = colorAt(at)
+    const twig = bowedPoints(base, tip, random, 0.05)
+    builder.addEdge(twig, color, color, 0.9, LAYER_NETWORK, TWIG_SEGMENTS)
+    builder.addNeuron(base, color, 1.6, LAYER_NETWORK)
+    builder.addNeuron(tip, color.clone().lerp(WHITE, 0.45), 3.2, LAYER_NETWORK)
+    builder.addImpulse(twig, bright, { size: 1.3, layer: LAYER_NETWORK, speed: 0.5, phase: k / 3 })
+    return { label, position: tip, at, side: sign }
+  })
+}
+
 function addBranch(
   builder: Builder,
   project: Project,
@@ -636,38 +802,56 @@ function addBranch(
   detail: Detail,
   random: Random,
   me: Vector3,
+  parent: BranchGeometry | null,
 ): BranchGeometry {
   const color = new Color(project.branch.color)
   const bright = color.clone().lerp(WHITE, 0.55)
   const glow = color.clone().lerp(WHITE, BRANCH_NEURON_LIGHTEN)
-  const curve = createTrunk(index, me, random)
+  const origin = parent ? new Color(parent.project.branch.color) : ME_COLOR
+  const span = parent ? 1 : ME_BLEND
+  const blend = (t: number) => MathUtils.smoothstep(t, 0, span)
+  const colorAt = (u: number) => origin.clone().lerp(color, blend(u))
+  const joint = parent ? parent.curve.getPointAt(JUNCTION_AT) : null
+  const heading = parent ? parent.curve.getTangentAt(JUNCTION_AT) : null
+  const shared = parent ? sharedStack(parent.project, project) : []
+  const curve = createTrunk(index, joint ?? me, heading, random)
   const node = curve.v3.clone()
   const tangent = curve.getTangent(1)
   const trunk = [curve.v0, curve.v1, curve.v2, curve.v3]
 
-  builder.addEdge(trunk, color, color, 0.55, LAYER_NETWORK, TRUNK_SEGMENTS)
+  builder.addEdge(trunk, origin, color, 0.85, LAYER_NETWORK, TRUNK_SEGMENTS, blend)
+  if (joint && heading && parent) {
+    addJunction(builder, joint, heading, [new Color(parent.project.branch.color), color])
+  }
   for (let i = 0; i < detail.trunkNeurons; i++) {
-    const p = curve.getPoint(0.1 + random() * 0.82)
+    const u = 0.1 + random() * 0.82
+    const p = curve.getPointAt(u)
     p.add(new Vector3(gaussian(random), gaussian(random), gaussian(random)).multiplyScalar(0.08))
-    builder.addNeuron(keepInside(p), glow, (0.8 + random() * 1.1) * BEAD_SCALE, LAYER_NETWORK)
+    builder.addNeuron(
+      keepInside(p),
+      colorAt(u).lerp(WHITE, BRANCH_NEURON_LIGHTEN),
+      (0.8 + random() * 1.1) * BEAD_SCALE,
+      LAYER_NETWORK,
+    )
   }
 
   const isRhythm = project.branch.visual === 'rhythm'
   builder.addNeuron(node, glow, NODE_SCALE, LAYER_NETWORK, index + 1, isRhythm ? RHYTHM_PERIOD : 0)
 
   for (const u of TWIG_POSITIONS) {
-    const base = curve.getPoint(u)
+    const base = curve.getPointAt(u)
+    const hue = colorAt(u)
     const away = new Vector3(gaussian(random), gaussian(random), gaussian(random)).normalize()
     const tip = keepInside(base.clone().addScaledVector(away, TWIG_REACH + random() * TWIG_LENGTH))
     builder.addEdge(
       bowedPoints(base, tip, random, 0.12),
-      color,
-      color,
+      hue,
+      hue,
       0.4,
       LAYER_NETWORK,
       TWIG_SEGMENTS,
     )
-    builder.addNeuron(tip, glow, 1.1, LAYER_NETWORK)
+    builder.addNeuron(tip, hue.clone().lerp(WHITE, BRANCH_NEURON_LIGHTEN), 1.1, LAYER_NETWORK)
     for (let i = 0; i < 2; i++) {
       const leaf = keepInside(
         tip
@@ -676,13 +860,17 @@ function addBranch(
             new Vector3(gaussian(random), gaussian(random), gaussian(random)).multiplyScalar(0.18),
           ),
       )
-      builder.addEdge(bowedPoints(tip, leaf, random, 0.04), color, color, 0.3, LAYER_NETWORK, 4)
-      builder.addNeuron(leaf, glow, 0.6, LAYER_NETWORK)
+      builder.addEdge(bowedPoints(tip, leaf, random, 0.04), hue, hue, 0.3, LAYER_NETWORK, 4)
+      builder.addNeuron(leaf, hue.clone().lerp(WHITE, BRANCH_NEURON_LIGHTEN), 0.6, LAYER_NETWORK)
     }
   }
 
+  const techs = addTechs(builder, curve, project, shared, colorAt, bright, detail.techReach, random)
+
   if (project.branch.visual === 'cluster') addCluster(builder, node, tangent, glow, bright, random)
   if (isRhythm) addRing(builder, node, tangent, glow, random)
+  if (project.branch.visual === 'detect') addDetect(builder, node, tangent, glow, bright, random)
+  if (project.branch.visual === 'core') addBeacon(builder, node, glow, index)
 
   if (isRhythm) {
     builder.addImpulse(trunk, bright, { size: 1.5, layer: LAYER_NETWORK, period: RHYTHM_PERIOD })
@@ -703,78 +891,15 @@ function addBranch(
     trailStep: HERO_TRAIL_STEP,
   })
 
-  return { curve, node, tangent, project }
-}
-
-function sharedStack(a: Project, b: Project): string[] {
-  const other = new Set(b.stack.map((item) => item.toLowerCase()))
-  const seen = new Set<string>()
-  return a.stack.filter((item) => {
-    const key = item.toLowerCase()
-    if (!other.has(key) || seen.has(key)) return false
-    seen.add(key)
-    return true
-  })
-}
-
-function addLinks(
-  builder: Builder,
-  branches: BranchGeometry[],
-  me: Vector3,
-  random: Random,
-): LinkGeometry[] {
-  const links: LinkGeometry[] = []
-  const middle = new Vector3()
-  for (let i = 0; i < branches.length; i++) {
-    for (let j = i + 1; j < branches.length; j++) {
-      const a = branches[i]
-      const b = branches[j]
-      const shared = sharedStack(a.project, b.project)
-      const layer = LAYER_LINK + links.length * LINK_LAYER_STEP
-      const colorA = new Color(a.project.branch.color)
-      const colorB = new Color(b.project.branch.color)
-      const mix = colorA.clone().lerp(colorB, 0.5).lerp(WHITE, 0.45)
-      const startA = a.curve.getPoint(0.6)
-      const startB = b.curve.getPoint(0.6)
-      middle.copy(startA).add(startB).multiplyScalar(0.5)
-      const arch = (start: Vector3, lift: number) =>
-        keepInside(
-          start
-            .clone()
-            .lerp(middle, 0.5)
-            .add(new Vector3(0, lift, 0)),
-        )
-      const points =
-        shared.length > 0
-          ? [startA, arch(startA, 0.35), arch(startB, -0.35), startB]
-          : [startA, me.clone(), me.clone(), startB]
-      const curve = new CubicBezierCurve3(points[0], points[1], points[2], points[3])
-      builder.addEdge(
-        points,
-        colorA,
-        colorB,
-        shared.length > 0 ? 0.55 : LINK_FAINT_ALPHA,
-        layer,
-        LINK_SEGMENTS,
-      )
-      const impulses = shared.length > 0 ? 3 : 1
-      for (let k = 0; k < impulses; k++) {
-        builder.addImpulse(k % 2 === 0 ? [...points] : reversed([...points]), mix, {
-          size: shared.length > 0 ? 1.2 : 0.9,
-          layer,
-          speed: 0.14 + k * 0.03,
-          phase: k / 3 + random() * 0.2,
-        })
-      }
-      links.push({
-        from: i,
-        to: j,
-        shared: shared.slice(0, LINK_LABEL_ITEMS),
-        midpoint: curve.getPoint(0.5),
-      })
-    }
+  return {
+    curve,
+    node,
+    project,
+    parent: parent ? index - 1 : -1,
+    joint,
+    junction: parent ? JUNCTION_AT : 0,
+    techs,
   }
-  return links
 }
 
 export function buildNetwork(
@@ -790,11 +915,13 @@ export function buildNetwork(
   addCore(builder, detail, random)
   const me = mePoint()
   addMe(builder, me, addInterior(builder, detail, random), random)
-  const branches = used.map((project, index) =>
-    addBranch(builder, project, index, detail, random, me),
-  )
-  const links = addLinks(builder, branches, me, random)
+  const branches: BranchGeometry[] = []
+  used.forEach((project, index) => {
+    branches.push(
+      addBranch(builder, project, index, detail, random, me, branches[index - 1] ?? null),
+    )
+  })
   const milestones = addMilestones(builder, me, milestoneCount, isMobile, random)
 
-  return { ...builder.finish(), branches, links, milestones, extent: BRAIN_EXTENT.clone(), me }
+  return { ...builder.finish(), branches, milestones, extent: BRAIN_EXTENT.clone(), me }
 }

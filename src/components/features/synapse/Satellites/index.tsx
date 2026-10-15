@@ -1,55 +1,28 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
-import { AdditiveBlending, Color, type ShaderMaterial } from 'three'
-import { useFadeRef } from '@/hooks/useFadeRef'
-import {
-  LABELED_SATELLITES,
-  SATELLITE_COUNT,
-  buildSatellites,
-  satelliteAlpha,
-  type SatelliteSlot,
-} from '@/lib/synapse/satellites'
-import { KLAUS_DIRECTION, type Frame } from '@/lib/synapse/timeline'
+import { AdditiveBlending, Color, Vector3, type ShaderMaterial } from 'three'
+import { SATELLITE_COUNT, buildSatellites } from '@/lib/synapse/satellites'
+import type { Frame } from '@/lib/synapse/timeline'
 import { satelliteFragment, satelliteVertex, spokeFragment, spokeVertex } from './shaders'
-import styles from './styles.module.css'
 
 interface SatellitesProps {
   frameRef: RefObject<Frame>
-  labels: string[]
-  klausColor: string
+  center: Vector3
+  index: number
+  color: string
   isMobile: boolean
 }
 
-interface SatelliteLabelProps {
-  slot: SatelliteSlot
-  text: string
-  frameRef: RefObject<Frame>
-}
-
-function SatelliteLabel({ slot, text, frameRef }: SatelliteLabelProps) {
-  const ref = useFadeRef<HTMLSpanElement>(
-    frameRef,
-    (frame) => satelliteAlpha(frame.time, slot) * frame.finale,
-  )
-  return (
-    <Html position={slot.position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
-      <span ref={ref} className={styles.label}>
-        {text}
-      </span>
-    </Html>
-  )
-}
-
-export function Satellites({ frameRef, labels, klausColor, isMobile }: SatellitesProps) {
+export function Satellites({ frameRef, center, index, color, isMobile }: SatellitesProps) {
   const dpr = useThree((state) => state.viewport.dpr)
-  const slots = useMemo(() => buildSatellites(KLAUS_DIRECTION), [])
+  const slots = useMemo(() => buildSatellites(center), [center])
   const [uniforms] = useState(() => ({
     uTime: { value: 0 },
-    uKlaus: { value: 0 },
+    uPresence: { value: 0 },
     uPixelRatio: { value: 1 },
-    uSize: { value: isMobile ? 100 : 130 },
-    uKlausColor: { value: new Color(klausColor) },
+    uSize: { value: isMobile ? 70 : 90 },
+    uColor: { value: new Color(color) },
+    uCenter: { value: center.clone() },
   }))
   const pointRef = useRef<ShaderMaterial>(null)
   const spokeRef = useRef<ShaderMaterial>(null)
@@ -58,10 +31,10 @@ export function Satellites({ frameRef, labels, klausColor, isMobile }: Satellite
     const position = new Float32Array(SATELLITE_COUNT * 3)
     const timing = new Float32Array(SATELLITE_COUNT * 2)
     const end = new Float32Array(SATELLITE_COUNT).fill(1)
-    slots.forEach((slot, index) => {
-      slot.position.toArray(position, index * 3)
-      timing[index * 2] = slot.cycle
-      timing[index * 2 + 1] = slot.offset
+    slots.forEach((slot, slotIndex) => {
+      slot.position.toArray(position, slotIndex * 3)
+      timing[slotIndex * 2] = slot.cycle
+      timing[slotIndex * 2 + 1] = slot.offset
     })
     const spokePosition = new Float32Array(SATELLITE_COUNT * 6)
     const spokeTiming = new Float32Array(SATELLITE_COUNT * 4)
@@ -79,10 +52,11 @@ export function Satellites({ frameRef, labels, klausColor, isMobile }: Satellite
   useEffect(() => {
     for (const material of [pointRef.current, spokeRef.current]) {
       if (!material) continue
-      material.uniforms.uSize.value = isMobile ? 100 : 130
-      material.uniforms.uKlausColor.value.set(klausColor)
+      material.uniforms.uSize.value = isMobile ? 70 : 90
+      material.uniforms.uColor.value.set(color)
+      material.uniforms.uCenter.value.copy(center)
     }
-  }, [isMobile, klausColor])
+  }, [isMobile, color, center])
 
   useEffect(() => {
     for (const material of [pointRef.current, spokeRef.current]) {
@@ -95,7 +69,7 @@ export function Satellites({ frameRef, labels, klausColor, isMobile }: Satellite
     for (const material of [pointRef.current, spokeRef.current]) {
       if (!material) continue
       material.uniforms.uTime.value = frame.time
-      material.uniforms.uKlaus.value = frame.klaus
+      material.uniforms.uPresence.value = frame.cards[index]
     }
   })
 
@@ -133,9 +107,6 @@ export function Satellites({ frameRef, labels, klausColor, isMobile }: Satellite
           blending={AdditiveBlending}
         />
       </lineSegments>
-      {labels.slice(0, LABELED_SATELLITES).map((text, index) => (
-        <SatelliteLabel key={text} slot={slots[index]} text={text} frameRef={frameRef} />
-      ))}
     </>
   )
 }

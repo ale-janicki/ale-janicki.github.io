@@ -6,13 +6,12 @@ import styles from './styles.module.css'
 
 interface CaptionProps {
   position: [number, number, number]
-  index: number
   frameRef: RefObject<Frame>
   children: string
 }
 
-export function Caption({ position, index, frameRef, children }: CaptionProps) {
-  const ref = useFadeRef<HTMLParagraphElement>(frameRef, (frame) => frame.captions[index])
+export function Caption({ position, frameRef, children }: CaptionProps) {
+  const ref = useFadeRef<HTMLParagraphElement>(frameRef, (frame) => frame.caption)
   return (
     <Html position={position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
       <p ref={ref} className={styles.caption}>

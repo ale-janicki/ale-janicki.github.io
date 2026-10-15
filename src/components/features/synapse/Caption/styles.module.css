@@ -16,6 +16,6 @@
     position: absolute;
     inset: -2rem -3rem;
     z-index: -1;
-    background: radial-gradient(closest-side, rgba(3, 4, 10, 0.8), rgba(3, 4, 10, 0));
+    background: radial-gradient(closest-side, var(--color-backdrop), var(--color-backdrop-clear));
   }
 }

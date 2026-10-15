@@ -15,6 +15,11 @@ interface BranchCardProps {
   onSelect: (id: string) => void
 }
 
+function demoText(hint: string): string {
+  const text = hint.replace(/^Demo:\s*/, '')
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
 export function BranchCard({ branch, index, frameRef, hidden, onSelect }: BranchCardProps) {
   const { project, node } = branch
   const [hovered, setHovered] = useState(false)
@@ -54,12 +59,27 @@ export function BranchCard({ branch, index, frameRef, hidden, onSelect }: Branch
           className={styles.card}
           style={{ '--branch': project.branch.color } as CSSProperties}
         >
-          <p className={`mono ${styles.eyebrow}`}>{`branch 0${index + 1}`}</p>
+          <div className={styles.top}>
+            <p className={`mono ${styles.eyebrow}`}>{`branch 0${index + 1}`}</p>
+            {project.highlight && <p className={`mono ${styles.highlight}`}>{project.highlight}</p>}
+          </div>
           <h3 className={styles.name}>{project.name}</h3>
           <p className={styles.tagline}>{project.tagline}</p>
-          {project.highlight && <p className={`mono ${styles.highlight}`}>{project.highlight}</p>}
-          {project.built && <p className={styles.built}>{project.built}</p>}
-          {project.demoHint && <p className={styles.demo}>{project.demoHint}</p>}
+          <p className={styles.description}>{project.description}</p>
+          <dl className={styles.facts}>
+            {project.built && (
+              <div className={styles.fact}>
+                <dt className="mono">Built</dt>
+                <dd>{project.built}</dd>
+              </div>
+            )}
+            {project.demoHint && (
+              <div className={styles.fact}>
+                <dt className="mono">Demo</dt>
+                <dd>{demoText(project.demoHint)}</dd>
+              </div>
+            )}
+          </dl>
           <ul className={styles.stack} aria-label={`${project.name} stack`}>
             {project.stack.map((tech) => (
               <li key={tech}>

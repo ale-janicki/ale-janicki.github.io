@@ -11,7 +11,6 @@ const GSAP_DEFAULT_LAG_ADJUSTED = 33
 
 export function useFlightScroll(
   progressRef: RefObject<number>,
-  trackRef: RefObject<HTMLElement | null>,
   enabled: boolean,
   locked: boolean,
 ): (progress: number) => void {
@@ -28,11 +27,7 @@ export function useFlightScroll(
     gsap.ticker.lagSmoothing(0)
     const trigger = ScrollTrigger.create({
       start: 0,
-      end: () => {
-        const track = trackRef.current
-        if (!track) return 'max'
-        return window.scrollY + track.getBoundingClientRect().bottom
-      },
+      end: 'max',
       invalidateOnRefresh: true,
       onUpdate: (self) => {
         progressRef.current = self.progress
@@ -47,7 +42,7 @@ export function useFlightScroll(
       lenis.destroy()
       lenisRef.current = null
     }
-  }, [enabled, progressRef, trackRef])
+  }, [enabled, progressRef])
 
   useEffect(() => {
     if (locked) lenisRef.current?.stop()

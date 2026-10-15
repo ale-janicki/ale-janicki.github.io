@@ -4,10 +4,10 @@ import { BranchCard } from '@/components/features/synapse/BranchCard'
 import { CameraRig } from '@/components/features/synapse/CameraRig'
 import { Caption } from '@/components/features/synapse/Caption'
 import { DomainLabel } from '@/components/features/synapse/DomainLabel'
-import { LinkLabel } from '@/components/features/synapse/LinkLabel'
 import { Milestone } from '@/components/features/synapse/Milestone'
 import { Network } from '@/components/features/synapse/Network'
 import { Satellites } from '@/components/features/synapse/Satellites'
+import { TechLabel } from '@/components/features/synapse/TechLabel'
 import { domains } from '@/content/domains'
 import { experience } from '@/content/experience'
 import { buildNetwork } from '@/lib/synapse/buildNetwork'
@@ -21,15 +21,13 @@ interface SceneProps {
   animated: boolean
   isMobile: boolean
   branches: Project[]
-  klaus: Project
   progressRef: RefObject<number>
   activeId: string | null
   onSelect: (id: string) => void
 }
 
-function focusIndexOf(activeId: string | null, branches: Project[], klaus: Project): number | null {
+function focusIndexOf(activeId: string | null, branches: Project[]): number | null {
   if (activeId === null) return null
-  if (activeId === klaus.id) return -1
   const index = branches.findIndex((branch) => branch.id === activeId)
   return index >= 0 ? index : null
 }
@@ -38,14 +36,12 @@ export default function Scene({
   animated,
   isMobile,
   branches,
-  klaus,
   progressRef,
   activeId,
   onSelect,
 }: SceneProps) {
   const network = useMemo(
-    () =>
-      buildNetwork(branches, isMobile, Math.min(experience.length, isMobile ? 3 : MAX_MILESTONES)),
+    () => buildNetwork(branches, isMobile, Math.min(experience.length, MAX_MILESTONES)),
     [branches, isMobile],
   )
   const domainAnchors = useMemo(
@@ -55,7 +51,11 @@ export default function Scene({
   const timeline = useMemo(() => createTimeline(network), [network])
   const frameRef = useRef(createFrame())
   const [ready, setReady] = useState(false)
-  const focus = animated ? focusIndexOf(activeId, branches, klaus) : null
+  const [activeTip, setActiveTip] = useState<number | null>(null)
+  const [pinnedTip, setPinnedTip] = useState<number | null>(null)
+  const focusedTip = pinnedTip ?? activeTip
+  const focus = animated ? focusIndexOf(activeId, branches) : null
+  const core = network.branches.findIndex((branch) => branch.project.branch.visual === 'core')
 
   return (
     <div className={styles.scene}>
@@ -74,20 +74,18 @@ export default function Scene({
           focus={focus}
           animated={animated}
         />
-        <Network
-          network={network}
-          frameRef={frameRef}
-          klausColor={klaus.branch.color}
-          isMobile={isMobile}
-        />
+        <Network network={network} frameRef={frameRef} isMobile={isMobile} />
         {animated && ready && (
           <>
-            <Satellites
-              frameRef={frameRef}
-              labels={klaus.stack}
-              klausColor={klaus.branch.color}
-              isMobile={isMobile}
-            />
+            {core >= 0 && (
+              <Satellites
+                frameRef={frameRef}
+                center={network.branches[core].node}
+                index={core}
+                color={network.branches[core].project.branch.color}
+                isMobile={isMobile}
+              />
+            )}
             {network.branches.map((branch, index) => (
               <BranchCard
                 key={branch.project.id}
@@ -104,7 +102,12 @@ export default function Scene({
                 position={anchor}
                 entry={experience[index]}
                 index={index}
+                dimmed={focusedTip !== null && focusedTip !== index}
+                pinned={pinnedTip === index}
+                isMobile={isMobile}
                 frameRef={frameRef}
+                onActivate={setActiveTip}
+                onPin={setPinnedTip}
               />
             ))}
             {domainAnchors.map((anchor, index) => (
@@ -116,23 +119,23 @@ export default function Scene({
                 frameRef={frameRef}
               />
             ))}
-            {network.links.map((link, index) =>
-              link.shared.length > 0 ? (
-                <LinkLabel
-                  key={`${link.from}-${link.to}`}
-                  position={link.midpoint}
-                  index={index}
+            {network.branches.map((branch, index) =>
+              branch.techs.map((tech, slot) => (
+                <TechLabel
+                  key={`${branch.project.id}-${tech.label}`}
+                  position={tech.position}
+                  side={tech.side}
+                  branch={index}
+                  slot={slot}
+                  color={branch.project.branch.color}
                   frameRef={frameRef}
                 >
-                  {`${branches[link.from].name} ↔ ${branches[link.to].name} · ${link.shared.join(', ')}`}
-                </LinkLabel>
-              ) : null,
+                  {tech.label}
+                </TechLabel>
+              )),
             )}
-            <Caption position={[0, -network.extent.y * 1.02, 0]} index={0} frameRef={frameRef}>
+            <Caption position={[0, -network.extent.y * 1.02, 0]} frameRef={frameRef}>
               Everything I build connects.
-            </Caption>
-            <Caption position={[0, -network.extent.y * 1.02, 0]} index={1} frameRef={frameRef}>
-              An ecosystem, not a portfolio.
             </Caption>
           </>
         )}

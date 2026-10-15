@@ -1,0 +1,22 @@
+.label {
+  width: max-content;
+  max-width: 44vw;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--branch);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-solid);
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  color: var(--color-text);
+  visibility: hidden;
+  opacity: 0;
+  user-select: none;
+
+  &[data-side='right'] {
+    transform: translate(0.7rem, -50%);
+  }
+
+  &[data-side='left'] {
+    transform: translate(calc(-100% - 0.7rem), -50%);
+  }
+}

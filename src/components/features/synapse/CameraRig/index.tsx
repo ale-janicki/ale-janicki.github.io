@@ -5,6 +5,7 @@ import {
   CAMERA_FOV,
   blendPose,
   createPose,
+  createView,
   type Frame,
   type Timeline,
 } from '@/lib/synapse/timeline'
@@ -32,6 +33,7 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
     focus: null as number | null,
     lastFocus: null as number | null,
     focusPose: createPose(),
+    view: createView(),
   })
 
   useEffect(() => {
@@ -66,6 +68,8 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
     const frame = frameRef.current
     const dt = Math.min(delta, 0.05)
     const aspect = size.width / size.height
+    s.view.aspect = aspect
+    s.view.width = size.width
 
     if (animated) {
       s.progress = MathUtils.damp(s.progress, progressRef.current, 4, dt)
@@ -74,20 +78,21 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
     } else {
       frame.time = STATIC_TIME
     }
-    timeline.sample(animated ? s.progress : timeline.staticProgress, aspect, frame)
+    timeline.sample(animated ? s.progress : 0, s.view, frame)
 
     const lastFocus = s.lastFocus
     if (s.blend > 0.001 && lastFocus !== null) {
       const eased = s.blend * s.blend * (3 - 2 * s.blend)
-      timeline.focus(lastFocus, aspect, s.focusPose)
+      timeline.focus(lastFocus, s.view, s.focusPose)
       blendPose(frame.pose, s.focusPose, eased, frame.pose)
       frame.open = MathUtils.lerp(frame.open, 1, eased)
-      if (lastFocus < 0) frame.klaus = MathUtils.lerp(frame.klaus, 1, eased)
-      else frame.inside = MathUtils.lerp(frame.inside, 1, eased)
+      frame.paths = MathUtils.lerp(frame.paths, 1, eased)
+      frame.inside = MathUtils.lerp(frame.inside, 1, eased)
       frame.cards.forEach((value, index) => {
         frame.cards[index] = value * (1 - eased)
       })
       frame.hero.fill(-1)
+      frame.techs.fill(0)
     }
 
     const onScreen = s.pointerX < 5

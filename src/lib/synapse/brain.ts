@@ -1,8 +1,6 @@
 import { MathUtils, Vector3 } from 'three'
 import { gaussian, type Random } from './random'
 
-export const BRAIN_RADIUS = 2.6
-
 const FRONT_YAW = 0.18
 const TOP_PITCH = 0.12
 const FOLD_FREQUENCY = 4.2
@@ -193,14 +191,23 @@ export function sampleInterior(count: number, random: Random): BrainNeuron[] {
 export const BRAIN_EXTENT = new Vector3(2.7, 2.4, 1.8)
 
 const PATHWAY_REGIONS: Vector3[] = [
-  new Vector3(1.25, 0.45, 0.55),
-  new Vector3(0.3, -0.12, 0.95),
-  new Vector3(-0.3, 0.55, -0.6),
-  new Vector3(1.0, -0.1, -0.7),
-  new Vector3(-1.3, -0.1, -0.5),
-  new Vector3(0.2, 0.9, 0.1),
+  new Vector3(1.1, 0.8, 0.5),
+  new Vector3(-0.5, -0.7, 1.05),
+  new Vector3(-0.8, 0.5, -0.7),
+  new Vector3(1.3, -0.3, -0.9),
+  new Vector3(-0.2, 0.85, 0.3),
+  new Vector3(0.6, -0.6, -0.4),
 ]
 const DEPTH_LIMIT = 0.7
+
+const SIDE_UP = new Vector3(0, 1, 0)
+const SIDE_FALLBACK_LIMIT = 0.8
+
+export function sideOf(direction: Vector3, out: Vector3): Vector3 {
+  return out
+    .crossVectors(direction, Math.abs(direction.y) > SIDE_FALLBACK_LIMIT ? X_AXIS : SIDE_UP)
+    .normalize()
+}
 
 export const HERO_VIEW = new Vector3(0.8, 0.2, 0.55).normalize()
 

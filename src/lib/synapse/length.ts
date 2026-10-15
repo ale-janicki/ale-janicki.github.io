@@ -1,34 +1,30 @@
 export const MAX_BRANCHES = 8
-export const MAX_LINKS = (MAX_BRANCHES * (MAX_BRANCHES - 1)) / 2
+export const MAX_TECHS = 6
 export const MAX_MILESTONES = 5
 export const MAX_DOMAINS = 5
-export const HERO_SLOTS = MAX_BRANCHES + MAX_MILESTONES
-export const LINK_LAYER_STEP = 0.01
+export const HERO_SLOTS = MAX_BRANCHES
+
+export const MILESTONE_REACH = { x: 0.78, y: 1.32 }
+export const MILESTONE_REACH_MOBILE = { x: 0.55, y: 0.9 }
+export const MILESTONE_FAN = 1.05
+export const MILESTONE_FAN_MOBILE = 0.85
 
 export const LENGTHS = {
-  hero: 1,
+  landing: 0.25,
+  intro: 0.75,
+  presentation: 1,
   toWide: 1,
   wideHold: 0.8,
-  transit: 0.8,
-  follow: 1,
+  enter: 2.4,
   hold: 0.9,
-  toLink: 0.9,
-  linkHold: 0.8,
-  toKlaus: 1.1,
-  klausHold: 1.4,
+  endPad: 0.4,
 }
 
+export const PRELUDE = LENGTHS.landing + LENGTHS.intro + LENGTHS.presentation + LENGTHS.toWide
+
 export function timelineLength(branchCount: number): number {
-  const perBranch = LENGTHS.transit + LENGTHS.follow + LENGTHS.hold
-  const fixed =
-    LENGTHS.hero +
-    LENGTHS.toWide +
-    LENGTHS.wideHold +
-    LENGTHS.toLink +
-    LENGTHS.linkHold +
-    LENGTHS.toKlaus +
-    LENGTHS.klausHold
-  return fixed + perBranch * branchCount
+  const perBranch = LENGTHS.enter + LENGTHS.hold
+  return PRELUDE + LENGTHS.wideHold + perBranch * branchCount + LENGTHS.endPad
 }
 
 export interface Act {
@@ -37,21 +33,19 @@ export interface Act {
   stop: number
 }
 
-export function flightActs(branchCount: number): Act[] {
-  const perBranch = LENGTHS.transit + LENGTHS.follow + LENGTHS.hold
-  const wideStart = LENGTHS.hero
-  const wideHoldStart = wideStart + LENGTHS.toWide
-  const firstTransit = wideHoldStart + LENGTHS.wideHold
-  const firstHold = firstTransit + LENGTHS.transit + LENGTHS.follow
-  const linkStart = firstTransit + perBranch * branchCount
-  const linkHoldStart = linkStart + LENGTHS.toLink
-  const klausStart = linkHoldStart + LENGTHS.linkHold
-  const klausHoldStart = klausStart + LENGTHS.toKlaus
+export function flightActs(names: string[]): Act[] {
+  const arrival = LENGTHS.landing + LENGTHS.intro
+  const wideHoldStart = PRELUDE
+  const firstEnter = wideHoldStart + LENGTHS.wideHold
+  const perBranch = LENGTHS.enter + LENGTHS.hold
   return [
-    { label: 'You', begin: 0, stop: 0 },
-    { label: 'Brain', begin: wideStart + 0.5, stop: wideHoldStart + 0.3 },
-    { label: 'Projects', begin: firstTransit, stop: firstHold + 0.2 },
-    { label: 'Ecosystem', begin: linkStart + 0.5 * LENGTHS.toLink, stop: linkHoldStart + 0.3 },
-    { label: 'Klaus', begin: klausStart + 0.75, stop: klausHoldStart + 0.3 },
+    { label: 'Meet', begin: 0, stop: 0 },
+    { label: 'You', begin: arrival - 0.3, stop: arrival + 0.2 },
+    { label: 'Brain', begin: PRELUDE - 0.5, stop: wideHoldStart + 0.4 },
+    ...names.map((name, index) => ({
+      label: name,
+      begin: firstEnter + perBranch * index + LENGTHS.enter * 0.35,
+      stop: firstEnter + perBranch * index + LENGTHS.enter + 0.3,
+    })),
   ]
 }
