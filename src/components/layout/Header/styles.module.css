@@ -45,13 +45,16 @@
 }
 
 .dock {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
   height: 2.375rem;
 }
 
 .card {
   --lift: 0;
   --dock: 0;
+  --docked-title: 0.6875rem;
+  --title-offset: 0.85rem;
   position: absolute;
   top: 0;
   left: 0;
@@ -103,6 +106,7 @@
 .meta {
   display: grid;
   gap: var(--space-2);
+  min-width: 0;
 }
 
 .cardName {
@@ -115,6 +119,7 @@
   @media (max-width: 767px) {
     font-size: 1.625rem;
     white-space: nowrap;
+    transform: translateY(calc(var(--dock) * var(--title-offset)));
   }
 
   @media (min-width: 1100px) {
@@ -124,14 +129,27 @@
 
 .cardTitle {
   font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font-size: calc(
+    var(--text-sm) * (1 - var(--dock)) + var(--docked-title) / var(--s2, 1) * var(--dock)
+  );
   line-height: 1.4;
   color: var(--color-text-muted);
   letter-spacing: 0.02em;
-  opacity: clamp(0, calc(1 - var(--dock) * 3), 1);
+  white-space: nowrap;
+
+  @media (max-width: 767px) {
+    font-size: var(--text-xs);
+    white-space: normal;
+    text-wrap: balance;
+    opacity: clamp(0, calc(1 - var(--dock) * 3), 1);
+  }
 }
 
 .actions {
   display: flex;
   gap: var(--space-2);
+
+  @media (max-width: 767px) {
+    gap: var(--space-1);
+  }
 }
