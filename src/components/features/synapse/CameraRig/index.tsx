@@ -10,6 +10,8 @@ import {
   type Timeline,
 } from '@/lib/synapse/timeline'
 
+const PROGRESS_DAMPING = 8
+
 interface CameraRigProps {
   timeline: Timeline
   frameRef: RefObject<Frame>
@@ -72,7 +74,7 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
     s.view.width = size.width
 
     if (animated) {
-      s.progress = MathUtils.damp(s.progress, progressRef.current, 4, dt)
+      s.progress = MathUtils.damp(s.progress, progressRef.current, PROGRESS_DAMPING, dt)
       frame.time += dt
       s.blend = MathUtils.damp(s.blend, s.focus !== null ? 1 : 0, 2.6, dt)
     } else {

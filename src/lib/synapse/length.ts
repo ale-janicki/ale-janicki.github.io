@@ -31,6 +31,7 @@ export interface Act {
   label: string
   begin: number
   stop: number
+  still: [number, number]
 }
 
 export function flightActs(names: string[]): Act[] {
@@ -39,13 +40,27 @@ export function flightActs(names: string[]): Act[] {
   const firstEnter = wideHoldStart + LENGTHS.wideHold
   const perBranch = LENGTHS.enter + LENGTHS.hold
   return [
-    { label: 'Meet', begin: 0, stop: 0 },
-    { label: 'You', begin: arrival - 0.3, stop: arrival + 0.2 },
-    { label: 'Brain', begin: PRELUDE - 0.5, stop: wideHoldStart + 0.4 },
-    ...names.map((name, index) => ({
-      label: name,
-      begin: firstEnter + perBranch * index + LENGTHS.enter * 0.35,
-      stop: firstEnter + perBranch * index + LENGTHS.enter + 0.3,
-    })),
+    { label: 'Meet', begin: 0, stop: 0, still: [0, LENGTHS.landing] },
+    {
+      label: 'You',
+      begin: arrival - 0.3,
+      stop: arrival + 0.2,
+      still: [arrival, arrival + LENGTHS.presentation],
+    },
+    {
+      label: 'Brain',
+      begin: PRELUDE - 0.5,
+      stop: wideHoldStart + 0.4,
+      still: [wideHoldStart, wideHoldStart + LENGTHS.wideHold],
+    },
+    ...names.map((name, index) => {
+      const holdStart = firstEnter + perBranch * index + LENGTHS.enter
+      return {
+        label: name,
+        begin: firstEnter + perBranch * index + LENGTHS.enter * 0.35,
+        stop: holdStart + 0.3,
+        still: [holdStart, holdStart + LENGTHS.hold] as [number, number],
+      }
+    }),
   ]
 }
