@@ -1,0 +1,28 @@
+.list {
+  display: grid;
+  gap: var(--space-3);
+  list-style: none;
+}
+
+.item {
+  width: 100%;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.text {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.name {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.tagline {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
