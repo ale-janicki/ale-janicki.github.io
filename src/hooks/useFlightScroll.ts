@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, type RefObject } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type RefObject } from 'react'
 import Lenis from 'lenis'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import 'lenis/dist/lenis.css'
+import { easeInOutCubic } from '@/lib/synapse/flight'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -16,18 +17,26 @@ const STILL_EDGE = 0.02
 
 const RESPONSIVE_BLEND = 0.5
 
-const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2)
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
 const travelEase = (t: number) =>
   RESPONSIVE_BLEND * easeOutCubic(t) + (1 - RESPONSIVE_BLEND) * easeInOutCubic(t)
+
+export interface FlightScroll {
+  scrollTo: (progress: number, still?: [number, number]) => void
+  glideTo: (progress: number, seconds: number) => void
+  settleAt: (progress: number) => void
+}
 
 export function useFlightScroll(
   progressRef: RefObject<number>,
   enabled: boolean,
   locked: boolean,
-): (progress: number, still?: [number, number]) => void {
+): FlightScroll {
   const lenisRef = useRef<Lenis | null>(null)
   const triggerRef = useRef<ScrollTrigger | null>(null)
+  const glideRef = useRef<gsap.core.Tween | null>(null)
+  const lockedRef = useRef(locked)
+  const flyingRef = useRef(false)
   const busyUntil = useRef(0)
 
   useEffect(() => {
@@ -49,6 +58,8 @@ export function useFlightScroll(
     triggerRef.current = trigger
     return () => {
       triggerRef.current = null
+      glideRef.current?.kill()
+      glideRef.current = null
       trigger.kill()
       gsap.ticker.remove(tick)
       gsap.ticker.lagSmoothing(GSAP_DEFAULT_LAG_THRESHOLD, GSAP_DEFAULT_LAG_ADJUSTED)
@@ -58,11 +69,12 @@ export function useFlightScroll(
   }, [enabled, progressRef])
 
   useEffect(() => {
-    if (locked) lenisRef.current?.stop()
+    lockedRef.current = locked
+    if (locked || flyingRef.current) lenisRef.current?.stop()
     else lenisRef.current?.start()
   }, [locked, enabled])
 
-  return useCallback((progress: number, still?: [number, number]) => {
+  const scrollTo = useCallback((progress: number, still?: [number, number]) => {
     const trigger = triggerRef.current
     const lenis = lenisRef.current
     if (!trigger || !lenis || performance.now() < busyUntil.current) return
@@ -87,4 +99,44 @@ export function useFlightScroll(
       },
     })
   }, [])
+
+  const glideTo = useCallback((progress: number, seconds: number) => {
+    const trigger = triggerRef.current
+    const lenis = lenisRef.current
+    if (!trigger || !lenis) return
+    glideRef.current?.kill()
+    glideRef.current = null
+    busyUntil.current = 0
+    flyingRef.current = true
+    lenis.stop()
+    if (seconds <= 0) return
+    const position = { value: lenis.scroll }
+    const target = trigger.start + progress * (trigger.end - trigger.start)
+    glideRef.current = gsap.to(position, {
+      value: target,
+      duration: seconds,
+      ease: easeInOutCubic,
+      onUpdate: () => lenis.scrollTo(position.value, { immediate: true, force: true }),
+    })
+  }, [])
+
+  const settleAt = useCallback(
+    (progress: number) => {
+      const trigger = triggerRef.current
+      const lenis = lenisRef.current
+      glideRef.current?.kill()
+      glideRef.current = null
+      flyingRef.current = false
+      if (!trigger || !lenis) return
+      lenis.scrollTo(trigger.start + progress * (trigger.end - trigger.start), {
+        immediate: true,
+        force: true,
+      })
+      progressRef.current = progress
+      if (!lockedRef.current) lenis.start()
+    },
+    [progressRef],
+  )
+
+  return useMemo(() => ({ scrollTo, glideTo, settleAt }), [scrollTo, glideTo, settleAt])
 }

@@ -1,21 +1,28 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { MathUtils } from 'three'
+import { MathUtils, Quaternion, Vector3 } from 'three'
+import { easeInOutCubic, type FlightRequest } from '@/lib/synapse/flight'
 import {
   CAMERA_FOV,
   blendPose,
   createPose,
+  createFrame,
   createView,
   type Frame,
   type Timeline,
 } from '@/lib/synapse/timeline'
 
 const PROGRESS_DAMPING = 8
+const QUIET_OUT_RATE = 14
+const QUIET_IN_RATE = 4.5
+const QUIET_EPSILON = 0.002
+const MIN_RADIUS = 0.001
 
 interface CameraRigProps {
   timeline: Timeline
   frameRef: RefObject<Frame>
   progressRef: RefObject<number>
+  flightRef: RefObject<FlightRequest | null>
   focus: number | null
   animated: boolean
 }
@@ -24,7 +31,23 @@ const TAN_HALF = Math.tan(MathUtils.degToRad(CAMERA_FOV / 2))
 const PARALLAX = 0.022
 const STATIC_TIME = 3.7
 
-export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: CameraRigProps) {
+function scaleContent(frame: Frame, factor: number): void {
+  frame.caption *= factor
+  frame.domains *= factor
+  frame.tips *= factor
+  frame.contact *= factor
+  for (let i = 0; i < frame.cards.length; i++) frame.cards[i] *= factor
+  for (let i = 0; i < frame.techs.length; i++) frame.techs[i] *= factor
+}
+
+export function CameraRig({
+  timeline,
+  frameRef,
+  progressRef,
+  flightRef,
+  focus,
+  animated,
+}: CameraRigProps) {
   const state = useRef({
     progress: 0,
     blend: 0,
@@ -36,6 +59,25 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
     lastFocus: null as number | null,
     focusPose: createPose(),
     view: createView(),
+    quiet: 0,
+    flying: false,
+    elapsed: 0,
+    request: null as FlightRequest | null,
+    target: createFrame(),
+    fromPosition: new Vector3(),
+    fromLook: new Vector3(),
+    toLook: new Vector3(),
+    fromDirection: new Vector3(),
+    direction: new Vector3(),
+    swing: new Quaternion(),
+    step: new Quaternion(),
+    fromRadius: 1,
+    toRadius: 1,
+    fromShiftX: 0,
+    fromShiftY: 0,
+    fromOpen: 0,
+    fromPaths: 0,
+    fromInside: 0,
   })
 
   useEffect(() => {
@@ -73,8 +115,41 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
     s.view.aspect = aspect
     s.view.width = size.width
 
+    if (animated && !s.flying && flightRef.current) {
+      const request = flightRef.current
+      flightRef.current = null
+      timeline.sample(request.progress, s.view, s.target)
+      s.request = request
+      s.flying = true
+      s.elapsed = 0
+      s.blend = 0
+      s.fromPosition.copy(frame.pose.position)
+      s.fromLook.copy(frame.pose.look)
+      s.toLook.copy(s.target.pose.look)
+      s.fromDirection.copy(s.fromPosition)
+      s.direction.copy(s.target.pose.position)
+      s.fromRadius = Math.max(s.fromDirection.length(), MIN_RADIUS)
+      s.toRadius = Math.max(s.direction.length(), MIN_RADIUS)
+      s.fromDirection.divideScalar(s.fromRadius)
+      s.direction.divideScalar(s.toRadius)
+      s.swing.setFromUnitVectors(s.fromDirection, s.direction)
+      s.fromShiftX = frame.pose.shiftX
+      s.fromShiftY = frame.pose.shiftY
+      s.fromOpen = frame.open
+      s.fromPaths = frame.paths
+      s.fromInside = frame.inside
+    }
+    if (s.flying && s.request && s.elapsed >= s.request.seconds) {
+      const { progress, onArrive } = s.request
+      s.flying = false
+      s.request = null
+      s.progress = progress
+      onArrive()
+    }
+
     if (animated) {
-      s.progress = MathUtils.damp(s.progress, progressRef.current, PROGRESS_DAMPING, dt)
+      if (s.flying) s.elapsed += dt
+      else s.progress = MathUtils.damp(s.progress, progressRef.current, PROGRESS_DAMPING, dt)
       frame.time += dt
       s.blend = MathUtils.damp(s.blend, s.focus !== null ? 1 : 0, 2.6, dt)
     } else {
@@ -96,6 +171,30 @@ export function CameraRig({ timeline, frameRef, progressRef, focus, animated }: 
       frame.hero.fill(-1)
       frame.techs.fill(0)
     }
+
+    if (s.flying && s.request) {
+      const eased = easeInOutCubic(Math.min(1, s.elapsed / s.request.seconds))
+      const pose = frame.pose
+      s.step.identity().slerp(s.swing, eased)
+      pose.position
+        .copy(s.fromDirection)
+        .applyQuaternion(s.step)
+        .multiplyScalar(s.fromRadius * Math.pow(s.toRadius / s.fromRadius, eased))
+      pose.look.lerpVectors(s.fromLook, s.toLook, eased)
+      pose.shiftX = MathUtils.lerp(s.fromShiftX, s.target.pose.shiftX, eased)
+      pose.shiftY = MathUtils.lerp(s.fromShiftY, s.target.pose.shiftY, eased)
+      frame.open = MathUtils.lerp(s.fromOpen, s.target.open, eased)
+      frame.paths = MathUtils.lerp(s.fromPaths, s.target.paths, eased)
+      frame.inside = MathUtils.lerp(s.fromInside, s.target.inside, eased)
+      frame.hero.fill(-1)
+    }
+    s.quiet = MathUtils.damp(
+      s.quiet,
+      s.flying ? 1 : 0,
+      s.flying ? QUIET_OUT_RATE : QUIET_IN_RATE,
+      dt,
+    )
+    if (s.quiet > QUIET_EPSILON) scaleContent(frame, 1 - s.quiet)
 
     const onScreen = s.pointerX < 5
     const targetX = onScreen ? s.pointerX : 0
