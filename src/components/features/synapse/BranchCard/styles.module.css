@@ -1,9 +1,20 @@
-.card {
+.wrap {
   position: absolute;
   top: 0;
   left: 7rem;
   width: clamp(19rem, 22vw + 6rem, 26rem);
-  max-height: calc(100svh - 5rem);
+  transform: translateY(-50%);
+
+  @media (max-width: 767px) {
+    left: 0;
+    top: 3.4rem;
+    width: min(20rem, 90vw);
+    transform: translateX(-50%);
+  }
+}
+
+.card {
+  max-height: calc(100svh - 9rem);
   padding: var(--space-5);
   overflow: hidden;
   border: 1px solid var(--color-border-strong);
@@ -19,15 +30,10 @@
   box-shadow:
     0 0 0 1px color-mix(in srgb, var(--branch) 18%, transparent),
     0 24px 60px rgba(0, 0, 0, 0.55);
-  transform: translateY(-50%);
 
   @media (max-width: 767px) {
-    left: 0;
-    top: 3.4rem;
-    width: min(20rem, 90vw);
     max-height: none;
     padding: var(--space-4);
-    transform: translateX(-50%);
   }
 }
 
@@ -125,6 +131,11 @@
 
 .open {
   margin-top: var(--space-4);
+}
+
+.pair {
+  justify-content: space-between;
+  margin-top: var(--space-3);
 }
 
 @media (max-height: 760px) and (min-width: 768px) {

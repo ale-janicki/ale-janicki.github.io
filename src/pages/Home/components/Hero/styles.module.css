@@ -90,6 +90,17 @@
   }
 }
 
+.pair {
+  margin-top: var(--space-5);
+  visibility: hidden;
+  pointer-events: none;
+
+  [data-pair='on'] & {
+    visibility: visible;
+    pointer-events: auto;
+  }
+}
+
 .sticky {
   position: sticky;
   top: 0;

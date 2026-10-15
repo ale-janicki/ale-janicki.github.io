@@ -1,6 +1,7 @@
 import { useEffect, useRef, type RefObject } from 'react'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { Section } from '@/components/layout/Section'
 import { Button } from '@/components/ui/Button'
 import { experience } from '@/content/experience'
@@ -13,6 +14,9 @@ gsap.registerPlugin(ScrollTrigger)
 const PRESENT_STEPS = 200
 const LIFT_END = 0.7
 const DOCK_PHOTO = 38
+const PRESENTATION_ACT = 1
+const PAIR_ON = 0.9
+const PAIR_OFF = 0.3
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 const smooth = (value: number) => value * value * (3 - 2 * value)
@@ -22,6 +26,7 @@ interface HeroProps {
   full: boolean
   brandRef: RefObject<HTMLAnchorElement | null>
   dockRef: RefObject<HTMLSpanElement | null>
+  nav: FlightNavConfig
   onMeet: () => void
 }
 
@@ -64,7 +69,7 @@ function Details({ profile }: { profile: Profile }) {
   )
 }
 
-function FlightHero({ profile, brandRef, dockRef, onMeet }: Omit<HeroProps, 'full'>) {
+function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps, 'full'>) {
   const stageRef = useRef<HTMLDivElement>(null)
   const slotRef = useRef<HTMLDivElement>(null)
   const restRef = useRef<HTMLDivElement>(null)
@@ -81,6 +86,7 @@ function FlightHero({ profile, brandRef, dockRef, onMeet }: Omit<HeroProps, 'ful
     let lifted = -1
     let left = -1
     let away = false
+    let paired = false
     const measure = () => {
       card.style.width = `${slot.offsetWidth}px`
       const height = card.offsetHeight
@@ -121,6 +127,11 @@ function FlightHero({ profile, brandRef, dockRef, onMeet }: Omit<HeroProps, 'ful
         away = gone
         stage.dataset.stage = gone ? 'presenting' : 'landing'
       }
+      const pairing = present >= PRESENT_STEPS * PAIR_ON && leave <= PRESENT_STEPS * PAIR_OFF
+      if (pairing !== paired) {
+        paired = pairing
+        stage.dataset.pair = pairing ? 'on' : 'off'
+      }
     }
     const trigger = ScrollTrigger.create({
       start: 0,
@@ -143,7 +154,7 @@ function FlightHero({ profile, brandRef, dockRef, onMeet }: Omit<HeroProps, 'ful
 
   return (
     <div className={styles.pin}>
-      <div ref={stageRef} className={styles.sticky} data-stage="landing">
+      <div ref={stageRef} className={styles.sticky} data-stage="landing" data-pair="off">
         <Section id="top" label="Introduction" full mobileEnd reveal={false}>
           <div className={styles.cell}>
             <div className={styles.landing}>
@@ -156,6 +167,7 @@ function FlightHero({ profile, brandRef, dockRef, onMeet }: Omit<HeroProps, 'ful
             <div className={styles.details}>
               <div ref={restRef} className={styles.slot} />
               <Details profile={profile} />
+              <FlightNav nav={nav} index={PRESENTATION_ACT} className={styles.pair} />
             </div>
           </div>
         </Section>
@@ -164,7 +176,7 @@ function FlightHero({ profile, brandRef, dockRef, onMeet }: Omit<HeroProps, 'ful
   )
 }
 
-export function Hero({ profile, full, brandRef, dockRef, onMeet }: HeroProps) {
+export function Hero({ profile, full, brandRef, dockRef, nav, onMeet }: HeroProps) {
   if (!full) {
     return (
       <Section id="top" label="Introduction" full={false} mobileEnd>
@@ -183,5 +195,5 @@ export function Hero({ profile, full, brandRef, dockRef, onMeet }: HeroProps) {
       </Section>
     )
   }
-  return <FlightHero profile={profile} brandRef={brandRef} dockRef={dockRef} onMeet={onMeet} />
+  return <FlightHero profile={profile} brandRef={brandRef} dockRef={dockRef} nav={nav} onMeet={onMeet} />
 }

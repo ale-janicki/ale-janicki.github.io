@@ -1,7 +1,8 @@
-import { lazy, Suspense, useCallback, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from 'react'
 import { ErrorBoundary } from '@/components/feedback/ErrorBoundary'
 import { ProjectPanel } from '@/components/features/ProjectPanel'
 import { CssNetwork } from '@/components/layout/CssNetwork'
+import type { FlightNavConfig } from '@/components/layout/FlightNav'
 import { Header } from '@/components/layout/Header'
 import { ProgressRail } from '@/components/layout/ProgressRail'
 import { Modal } from '@/components/ui/Modal'
@@ -25,6 +26,10 @@ const branches = projects.slice(0, MAX_BRANCHES)
 const flightLength = timelineLength(branches.length)
 const acts = flightActs(branches.map((project) => project.name))
 const meetStop = acts[1].stop / flightLength
+const meetStill: [number, number] = [
+  acts[0].still[0] / flightLength,
+  acts[0].still[1] / flightLength,
+]
 const trackHeight = `calc(${flightLength - PRELUDE + 1} * 100svh)`
 
 export function HomePage() {
@@ -57,8 +62,14 @@ export function HomePage() {
   const handleCloseContact = useCallback(() => setContactOpen(false), [])
   const handleOpenContact = useCallback(() => setContactOpen(true), [])
   const handleSceneError = useCallback(() => setSceneFailed(true), [])
-  const handleMeet = useCallback(() => scrollTo(meetStop), [scrollTo])
+  const handleMeet = useCallback(() => scrollTo(meetStop, meetStill), [scrollTo])
   const handleHome = useCallback(() => scrollTo(0), [scrollTo])
+
+  const navHidden = activeId !== null || projectsOpen || contactOpen
+  const nav = useMemo<FlightNavConfig>(
+    () => ({ acts, length: flightLength, hidden: navHidden, onJump: scrollTo }),
+    [navHidden, scrollTo],
+  )
 
   const activeProject = projects.find((project) => project.id === activeId) ?? null
 
@@ -75,6 +86,7 @@ export function HomePage() {
               branches={branches}
               progressRef={progressRef}
               activeId={activeId}
+              nav={nav}
               onSelect={handleSelect}
             />
           </Suspense>
@@ -100,14 +112,11 @@ export function HomePage() {
           full={flight}
           brandRef={brandRef}
           dockRef={dockRef}
+          nav={nav}
           onMeet={handleMeet}
         />
         {flight ? (
-          <div
-            className={styles.track}
-            style={{ height: trackHeight }}
-            aria-hidden="true"
-          />
+          <div className={styles.track} style={{ height: trackHeight }} aria-hidden="true" />
         ) : (
           <>
             <ProjectsSection projects={projects} onSelect={handleSelect} />

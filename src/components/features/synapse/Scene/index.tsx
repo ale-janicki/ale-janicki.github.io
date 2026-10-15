@@ -8,6 +8,7 @@ import { Milestone } from '@/components/features/synapse/Milestone'
 import { Network } from '@/components/features/synapse/Network'
 import { Satellites } from '@/components/features/synapse/Satellites'
 import { TechLabel } from '@/components/features/synapse/TechLabel'
+import type { FlightNavConfig } from '@/components/layout/FlightNav'
 import { domains } from '@/content/domains'
 import { experience } from '@/content/experience'
 import { buildNetwork } from '@/lib/synapse/buildNetwork'
@@ -17,12 +18,16 @@ import { CAMERA_FOV, createFrame, createTimeline } from '@/lib/synapse/timeline'
 import type { Project } from '@/types/project'
 import styles from './styles.module.css'
 
+const BRAIN_ACT = 2
+const FIRST_BRANCH_ACT = 3
+
 interface SceneProps {
   animated: boolean
   isMobile: boolean
   branches: Project[]
   progressRef: RefObject<number>
   activeId: string | null
+  nav: FlightNavConfig
   onSelect: (id: string) => void
 }
 
@@ -38,6 +43,7 @@ export default function Scene({
   branches,
   progressRef,
   activeId,
+  nav,
   onSelect,
 }: SceneProps) {
   const network = useMemo(
@@ -93,6 +99,8 @@ export default function Scene({
                 index={index}
                 frameRef={frameRef}
                 hidden={activeId !== null}
+                nav={nav}
+                navIndex={index + FIRST_BRANCH_ACT}
                 onSelect={onSelect}
               />
             ))}
@@ -134,7 +142,10 @@ export default function Scene({
                 </TechLabel>
               )),
             )}
-            <Caption position={[0, -network.extent.y * 1.02, 0]} frameRef={frameRef}>
+            <Caption position={[0, -network.extent.y * 1.02, 0]} frameRef={frameRef}
+              nav={nav}
+              navIndex={BRAIN_ACT}
+            >
               Everything I build connects.
             </Caption>
           </>

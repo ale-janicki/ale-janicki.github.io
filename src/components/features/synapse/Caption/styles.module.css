@@ -19,3 +19,13 @@
     background: radial-gradient(closest-side, var(--color-backdrop), var(--color-backdrop-clear));
   }
 }
+
+.pair {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  justify-content: center;
+  width: max-content;
+  margin-top: var(--space-4);
+  transform: translateX(-50%);
+}
