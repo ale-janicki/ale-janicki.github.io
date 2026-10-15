@@ -1,0 +1,43 @@
+.section {
+  display: flex;
+  align-items: center;
+  padding: var(--space-16) var(--space-4);
+
+  @media (min-width: 768px) {
+    padding: var(--space-16) var(--space-12);
+  }
+}
+
+.full {
+  min-height: 100svh;
+  pointer-events: none;
+}
+
+.mobileEnd {
+  @media (max-width: 767px) {
+    align-items: flex-end;
+  }
+}
+
+.right {
+  justify-content: flex-end;
+}
+
+.content {
+  width: 100%;
+  max-width: 34rem;
+  pointer-events: auto;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  transition:
+    opacity 700ms ease,
+    transform 700ms ease;
+}
+
+.visible {
+  opacity: 1;
+  transform: none;
+}
