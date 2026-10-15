@@ -2,7 +2,6 @@ import { useEffect, useState, type CSSProperties, type RefObject } from 'react'
 import { Html } from '@react-three/drei'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
-import { Chip } from '@/components/ui/Chip'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import type { BranchGeometry } from '@/lib/synapse/buildNetwork'
 import type { Frame } from '@/lib/synapse/timeline'
@@ -94,13 +93,6 @@ export function BranchCard({
                 </div>
               )}
             </dl>
-            <ul className={styles.stack} aria-label={`${project.name} stack`}>
-              {project.stack.map((tech) => (
-                <li key={tech}>
-                  <Chip>{tech}</Chip>
-                </li>
-              ))}
-            </ul>
             <Button
               variant="secondary"
               size="sm"
