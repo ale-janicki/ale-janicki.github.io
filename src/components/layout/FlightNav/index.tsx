@@ -8,6 +8,7 @@ export interface FlightNavConfig {
   length: number
   hidden: boolean
   onJump: (progress: number, still?: [number, number]) => void
+  onTop?: () => void
 }
 
 interface FlightNavProps {
@@ -16,16 +17,23 @@ interface FlightNavProps {
   className?: string
 }
 
-function Arrow({ back }: { back?: boolean }) {
+const ARROW_PATHS = {
+  back: 'M10 3 5 8l5 5',
+  next: 'M6 3l5 5-5 5',
+  up: 'M3 10l5-5 5 5',
+}
+
+export function Arrow({ back, up }: { back?: boolean; up?: boolean }) {
+  const path = up ? ARROW_PATHS.up : back ? ARROW_PATHS.back : ARROW_PATHS.next
   return (
     <svg className={styles.arrow} viewBox="0 0 16 16" aria-hidden="true">
-      <path d={back ? 'M10 3 5 8l5 5' : 'M6 3l5 5-5 5'} />
+      <path d={path} />
     </svg>
   )
 }
 
 export function FlightNav({ nav, index, className }: FlightNavProps) {
-  const { acts, length, hidden, onJump } = nav
+  const { acts, length, hidden, onJump, onTop } = nav
   const prev = index > 0 ? acts[index - 1] : null
   const next = index < acts.length - 1 ? acts[index + 1] : null
   const [from, until] = acts[index].still
@@ -76,6 +84,12 @@ export function FlightNav({ nav, index, className }: FlightNavProps) {
             {next.label}
           </span>
           <Arrow />
+        </Button>
+      )}
+      {!next && onTop && (
+        <Button size="lg" className={styles.button} onClick={onTop}>
+          <span className={styles.label}>Back to top</span>
+          <Arrow up />
         </Button>
       )}
     </nav>

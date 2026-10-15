@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Arrow } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { trapTab } from '@/lib/trapTab'
@@ -8,9 +9,10 @@ import styles from './styles.module.css'
 interface ProjectPanelProps {
   project: Project
   onClose: () => void
+  onBack: () => void
 }
 
-export function ProjectPanel({ project, onClose }: ProjectPanelProps) {
+export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
   const panelRef = useRef<HTMLElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const onCloseRef = useRef(onClose)
@@ -70,8 +72,9 @@ export function ProjectPanel({ project, onClose }: ProjectPanelProps) {
       </ul>
       <div className={styles.actions}>
         <Button disabled>Launch demo — coming soon</Button>
-        <Button ref={closeRef} variant="ghost" onClick={onClose}>
-          Back to the network
+        <Button ref={closeRef} variant="secondary" size="lg" onClick={onBack}>
+          <Arrow back />
+          Back
         </Button>
       </div>
     </aside>

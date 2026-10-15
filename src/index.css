@@ -51,7 +51,7 @@
   --z-content: 1;
   --z-header: 20;
   --z-panel: 30;
-  --z-modal: 40;
+  --z-menu: 40;
 }
 
 @media (min-width: 768px) {

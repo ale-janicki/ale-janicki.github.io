@@ -1,28 +1,32 @@
 import type { MouseEvent, RefObject } from 'react'
+import { ProjectsMenu } from '@/components/layout/ProjectsMenu'
 import { Button } from '@/components/ui/Button'
 import type { Profile } from '@/content/profile'
+import type { Project } from '@/types/project'
 import styles from './styles.module.css'
 
 interface HeaderProps {
   profile: Profile
+  projects: Project[]
+  activeId: string | null
   flight: boolean
   brandRef: RefObject<HTMLAnchorElement | null>
   dockRef: RefObject<HTMLSpanElement | null>
   onHome: () => void
-  onOpenProjects: () => void
+  onSelectProject: (id: string) => void
   onOpenContact: () => void
-  projectsDisabled: boolean
 }
 
 export function Header({
   profile,
+  projects,
+  activeId,
   flight,
   brandRef,
   dockRef,
   onHome,
-  onOpenProjects,
+  onSelectProject,
   onOpenContact,
-  projectsDisabled,
 }: HeaderProps) {
   const handleHome = (event: MouseEvent) => {
     event.preventDefault()
@@ -70,22 +74,8 @@ export function Header({
         </a>
       )}
       <nav className={styles.actions} aria-label="Quick access">
-        <Button
-          variant="secondary"
-          size="sm"
-          aria-haspopup="dialog"
-          disabled={projectsDisabled}
-          onClick={onOpenProjects}
-        >
-          Projects
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
-          aria-haspopup="dialog"
-          disabled={projectsDisabled}
-          onClick={onOpenContact}
-        >
+        <ProjectsMenu projects={projects} activeId={activeId} onSelect={onSelectProject} />
+        <Button variant="secondary" size="sm" onClick={onOpenContact}>
           Contact
         </Button>
       </nav>

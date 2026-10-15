@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: var(--z-header);
+  z-index: var(--z-menu);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -65,7 +65,8 @@
   color: var(--color-text);
   text-decoration: none;
   pointer-events: none;
-  opacity: var(--ready, 0);
+  opacity: calc(var(--ready, 0) * (1 - var(--exit, 0)));
+  translate: calc(var(--exit, 0) * -2.5rem) 0;
   transform-origin: 0 0;
   transform: translate(
       calc(
@@ -81,6 +82,10 @@
 
   @media (min-width: 768px) {
     gap: var(--space-5);
+  }
+
+  &[data-exit='on'] {
+    visibility: hidden;
   }
 
   &:focus-visible {
