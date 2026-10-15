@@ -1,173 +1,24 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-
-<head>
-  <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Alessandro</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Open+Sans:ital,wght@0,400;0,700;1,400&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@v2.15.1/devicon.min.css">
-</head>
-
-<body>
-
-  <input id="close-menu" class="close-menu" type="checkbox" aria-label="Close menu" role="button">
-  <label class="close-menu-label" for="close-menu" title="close menu"></label>
-  <aside class= "menu white-bg">
-    <nav class="menu-content">
-      <div>
-        <h1 onclick="getElementById('close-menu').checked = false;"><a href="#home">LOGO</a></h1>
-      </div>
-
-      <ul onclick="getElementById('close-menu').checked = false;">
-        <li><a href="#about">Alessandro</a></li>
-        <li><a href="#experience">Experiência</a></li>
-        <li><a href="#studies">Estudos</a></li>
-        <li><a href="#skills">Skills</a></li>
-        <li><a href="#certificates">Certificados</a></li>
-        <li><a href="#contact">Contatos</a></li>
-      </ul>
-    </nav>
-  </aside>
-
-  <div class="menu-spacing"></div>
-
-  <section id="home" class="main-bg section">
-    <div class="home-content main-content">
-      <h2>Bem-vindo</h2>
-      <p>Olá seja bem-vindo ao meu site, aqui vou apresentar um pouco mais sobre mim</p>
-    </div>
-  </section>
-
-  <section id="about" class="white-bg section">
-    <div class="main-content intro-content">
-
-      <div class="intro-text-content">
-        <h2>Alessandro Janicki Araujo</h2>
-        <p>Estudante de Engenharia da Computação, com conhecimento em Java, C, C++, SQL e NoSQL. Com o objetivo de entender os propósito do projeto e criar soluções eficazes, armazenando dados e também assegurando que eles sejam exibidos para o usuário que deveria ter acesso a eles. Nível Técnico com certificado em Mecatrônica e Inglês avançado.</p>
-      </div>
-
-      <ul class="gallery">
-        <li class="pictures">
-          <input type="radio" id="picture1" name="picture" checked>
-          <label for="picture1"></label>
-          <img src="./assets/img/foto1.jpg" alt="foto 1">
-        </li>
-        <li class="pictures">
-          <input type="radio" id="picture2" name="picture" checked>
-          <label for="picture2"></label>
-          <img src="./assets/img/foto2.png" alt="foto 1">
-        </li>
-        <li class="pictures">
-          <input type="radio" id="picture3" name="picture" checked>
-          <label for="picture3"></label>
-          <img src="./assets/img/foto3.jpeg" alt="foto 1">
-        </li>
-        <li class="pictures">
-          <input type="radio" id="picture4" name="picture" checked>
-          <label for="picture4"></label>
-          <img src="./assets/img/foto4.png" alt="foto 1">
-        </li>
-      </ul>
-
-    </div>
-  </section>
-
-  <section id="experience" class="main-bg section">
-    <div class="experience-content main-content">
-      <h2>Experiência</h2>
-
-      <h3>Gerente de Varejo</h3>
-      <h4>Mini Mercado Lívia</h4>
-      <p>Responsável pela organização e gestão do estabelecimento de varejo.</p>
-
-      <h3>Soldado do 2 BSUP</h3>
-      <h4>Exército Brasileiro</h4>
-      <p>Soldado da seção de informática, responsável pela manutenção de sistemas da rede local, manutenção de rede e manutenção de aparelhos de informática.</p>
-
-      <h3>Aprendiz Técnico</h3>
-      <h4>GreenWins</h4>
-      <p>Responsável pela manutenção de sistemas elétricos e eletrônicos, programação do arduino, parametrização de seus componetos e criação de projetos em CAD. </p>
-  </div>
-  </section>
-
-  <section id="studies" class="white-bg section">
-    <div class="studies-content main-content">
-
-      <h2 class="studies-main-heading">Estudos</h2>
-      
-      <ol>
-        <li>
-          <h3>Universidade Anhembi Morumbi</h3>
-          <h4>Bacharelado em Engenharia - JAN/2019 ATÉ DEZ/2023</h4>
-          <p>Engenharia da Computação - Machine Learning & Big Data Track</p>
-        </li>
-      
-        <li>
-          <h3>Colégio Seta</h3>
-          <h4>Diploma Técnico - JAN/2016 ATÉ DEZ/2018</h4>
-          <p>Mecatrônica - Robótica & Eletroeletrônica</p>
-        </li>
-      </ol>
-
-    </div>
-  </section>
-
-  <section id="skills" class="main-bg section">
-    <div class="skills-content main-content">
-      <h2>Skills</h2>
-      
-      <h3>Idiomas:</h3>
-      <p>Português - Inglês</p>
-
-      <h3>Linguagens de Programação:</h3>
-
-      <div>
-        <i class="devicon-java-plain"></i>
-        <i class="devicon-javascript-plain"></i>
-        <i class="devicon-cplusplus-plain"></i>
-        <i class="devicon-html5-plain"></i>
-        <i class="devicon-css3-plain"></i>   
-      </div>
-      
-  </div>
-  </section>
-
-  <section id="certificates" class="white-bg section">
-    <div class="certificates-content main-content">
-      <h2>Certificados</h2>
-      
-      <div class="grid">
-        <article>
-          <h3>JAVA COMPLETO PROGRAMAÇÃO ORIENTADA A OBJETOS +PROJETOS</h3>
-          <p>Udemy</p>
-        </article>
-        <article>
-          <h3>INTRODUÇAO AO BANCO DE DADOS MYSQL</h3>
-          <p>Prof. Diego Mariano</p>
-        </article>
-        <article>
-          <h3>MARATONA DO ZERO AO CÓDIGO</h3>
-          <p>Kenzie Academy Brasil</p>
-        </article>
-      </div>    
-  </section>
-
-  <section id="contact" class="main-bg section">
-    <div class="contact-content main-content">
-      <h2>Contatos</h2>  
-      
-        <h3><a href="mailto:alessandrojanicki@hotmail.com"><img src="./assets/img/o-email.png">- Email</a></h3>
-        <h3><a href="https://www.linkedin.com/in/alejanicki/"><img src="./assets/img/logotipo-do-linkedin.png">- Linkedin</a></h3>
-        <h3><a href="https://github.com/alejanicki"><img src="./assets/img/github.png">- Github</a></h3>  
-
-  </div>
-  </section>
-
-  <a class="back-to-top" href="#">➤</a>
-</body>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#05060d" />
+    <meta
+      name="description"
+      content="Alessandro Janicki — Computer Engineer and Full Stack Developer. A living network of projects."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <title>Alessandro Janicki — Computer Engineer · Full Stack Developer</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
