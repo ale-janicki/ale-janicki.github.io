@@ -27,6 +27,10 @@ const LABEL_ROOM = 202
 const LABEL_ROOM_MOBILE = 137
 const FAN_LEFT = 0.9
 const FAN_LEFT_MOBILE = 0.5
+const FAN_TOP_MOBILE = 76
+const FAN_BOTTOM_MOBILE = 0.5
+const FAN_SPAN_MOBILE = 1.36
+const FAN_LABEL_HALF = 18
 const WIDE_DIRECTION = new Vector3(-0.08, 0.28, 1).normalize()
 const CHASE_BACK = 1.1
 const CHASE_LEAD = 0.8
@@ -203,13 +207,16 @@ export function createTimeline(network: NetworkLayout): Timeline {
     const left = landscape ? (view.width - span) / 2 + TEXT_RIGHT : EDGE
     const wanted = height / 2 / (HERO_DISTANCE * TAN_HALF)
     const capacity = (view.width - labels - left) / (reach.x + margin)
-    const scale = Math.min(wanted, capacity)
+    const fitted = landscape
+      ? Infinity
+      : (height * FAN_BOTTOM_MOBILE - FAN_TOP_MOBILE - 2 * FAN_LABEL_HALF) / FAN_SPAN_MOBILE
+    const scale = Math.min(wanted, capacity, fitted)
     const ideal = landscape ? (view.width - span) / 2 + span * HERO_COLUMN : view.width * 0.35
     const center = Math.min(ideal, view.width - labels - reach.x * scale)
     out.look.copy(me)
     out.position.copy(me).addScaledVector(HERO_VIEW, height / 2 / (scale * TAN_HALF))
     out.shiftX = (2 * Math.max(center, left + margin * scale)) / view.width - 1
-    out.shiftY = landscape ? 0 : 0.4
+    out.shiftY = landscape ? 0 : 1 - (FAN_TOP_MOBILE + height * FAN_BOTTOM_MOBILE) / height
   }
 
   const widePose: PoseFn = (out, view) => {
@@ -239,7 +246,7 @@ export function createTimeline(network: NetworkLayout): Timeline {
     out.look.copy(branches[index].node)
     out.position.copy(branches[index].node).add(holdOffset(index, view, offset))
     out.shiftX = landscape ? columnShift(view, HOLD_COLUMN) : 0
-    out.shiftY = landscape ? 0 : 0.2
+    out.shiftY = landscape ? 0 : 0.3
   }
 
   const chase = (index: number, arc: number, out: Pose, view: View): void => {
