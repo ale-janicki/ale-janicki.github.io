@@ -119,7 +119,10 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
         left = leave
         stage.style.setProperty('--present', String(present / PRESENT_STEPS))
         stage.style.setProperty('--leave', String(leave / PRESENT_STEPS))
-        card.style.setProperty('--lift', String(smooth(clamp01(present / (PRESENT_STEPS * LIFT_END)))))
+        card.style.setProperty(
+          '--lift',
+          String(smooth(clamp01(present / (PRESENT_STEPS * LIFT_END)))),
+        )
         card.style.setProperty('--dock', String(smooth(leave / PRESENT_STEPS)))
       }
       const gone = present > PRESENT_STEPS * 0.4
@@ -159,7 +162,7 @@ function FlightHero({ profile, brandRef, dockRef, nav, onMeet }: Omit<HeroProps,
           <div className={styles.cell}>
             <div className={styles.landing}>
               <div ref={slotRef} className={styles.slot} />
-              <Button className={styles.meet} onClick={onMeet}>
+              <Button size="lg" className={styles.meet} onClick={onMeet}>
                 Meet {profile.name.split(' ')[0]}
               </Button>
               <p className={`mono ${styles.cue}`}>or scroll to follow the signal</p>
@@ -195,5 +198,7 @@ export function Hero({ profile, full, brandRef, dockRef, nav, onMeet }: HeroProp
       </Section>
     )
   }
-  return <FlightHero profile={profile} brandRef={brandRef} dockRef={dockRef} nav={nav} onMeet={onMeet} />
+  return (
+    <FlightHero profile={profile} brandRef={brandRef} dockRef={dockRef} nav={nav} onMeet={onMeet} />
+  )
 }

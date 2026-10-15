@@ -52,7 +52,7 @@ export function FlightNav({ nav, index, className }: FlightNavProps) {
       {prev && (
         <Button
           variant="secondary"
-          size="sm"
+          size="lg"
           className={styles.button}
           aria-label={`Back to ${prev.label}`}
           onClick={handleBack}
@@ -66,7 +66,7 @@ export function FlightNav({ nav, index, className }: FlightNavProps) {
       )}
       {next && (
         <Button
-          size="sm"
+          size="lg"
           className={styles.button}
           aria-label={`Next: ${next.label}`}
           onClick={handleNext}

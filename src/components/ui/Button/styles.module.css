@@ -64,3 +64,15 @@
   padding: var(--space-2) var(--space-5);
   font-size: var(--text-base);
 }
+
+.lg {
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--text-base);
+  line-height: 1;
+
+  @media (max-width: 767px) {
+    padding: var(--space-3) var(--space-5);
+  }
+}

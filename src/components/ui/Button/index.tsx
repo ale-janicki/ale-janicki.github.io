@@ -3,7 +3,7 @@ import styles from './styles.module.css'
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost'
-  size?: 'sm' | 'md'
+  size?: 'sm' | 'md' | 'lg'
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
