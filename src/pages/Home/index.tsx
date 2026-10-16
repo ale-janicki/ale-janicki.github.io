@@ -59,7 +59,12 @@ export function HomePage() {
   const dockRef = useRef<HTMLSpanElement>(null)
   const flight = mode === 'flight'
 
-  const { scrollTo, glideTo, settleAt } = useFlightScroll(progressRef, flight, activeId !== null)
+  const { scrollTo, glideTo, settleAt } = useFlightScroll(
+    progressRef,
+    flight,
+    activeId !== null,
+    reducedMotion,
+  )
   const act = useFlightAct(progressRef, acts, flightLength, flight)
 
   const returnRef = useRef<number | null>(null)
@@ -150,7 +155,7 @@ export function HomePage() {
         <ErrorBoundary fallback={<CssNetwork />} onError={handleSceneError}>
           <Suspense fallback={<CssNetwork />}>
             <Scene
-              animated={flight}
+              reducedMotion={reducedMotion}
               isMobile={isMobile}
               branches={branches}
               progressRef={progressRef}

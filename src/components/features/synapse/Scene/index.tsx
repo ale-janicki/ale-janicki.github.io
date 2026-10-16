@@ -21,7 +21,7 @@ import type { Project } from '@/types/project'
 import styles from './styles.module.css'
 
 interface SceneProps {
-  animated: boolean
+  reducedMotion: boolean
   isMobile: boolean
   branches: Project[]
   progressRef: RefObject<number>
@@ -38,7 +38,7 @@ function focusIndexOf(activeId: string | null, branches: Project[]): number | nu
 }
 
 export default function Scene({
-  animated,
+  reducedMotion,
   isMobile,
   branches,
   progressRef,
@@ -61,14 +61,13 @@ export default function Scene({
   const [activeTip, setActiveTip] = useState<number | null>(null)
   const [pinnedTip, setPinnedTip] = useState<number | null>(null)
   const focusedTip = pinnedTip ?? activeTip
-  const focus = animated ? focusIndexOf(activeId, branches) : null
+  const focus = focusIndexOf(activeId, branches)
   const core = network.branches.findIndex((branch) => branch.project.branch.visual === 'core')
 
   return (
     <div className={styles.scene}>
       <Canvas
         dpr={isMobile ? [1, 1.5] : [1, 1.75]}
-        frameloop={animated ? 'always' : 'demand'}
         camera={{ fov: CAMERA_FOV, near: 0.1, far: 300, position: [0, 0, 8] }}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onCreated={() => setReady(true)}
@@ -80,12 +79,12 @@ export default function Scene({
           progressRef={progressRef}
           flightRef={flightRef}
           focus={focus}
-          animated={animated}
+          reducedMotion={reducedMotion}
         />
         <Network network={network} frameRef={frameRef} isMobile={isMobile} />
-        {animated && ready && (
+        {ready && (
           <>
-            {core >= 0 && (
+            {core >= 0 && !reducedMotion && (
               <Satellites
                 frameRef={frameRef}
                 center={network.branches[core].node}

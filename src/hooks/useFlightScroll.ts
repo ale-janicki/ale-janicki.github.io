@@ -32,6 +32,7 @@ export function useFlightScroll(
   progressRef: RefObject<number>,
   enabled: boolean,
   locked: boolean,
+  reducedMotion: boolean,
 ): FlightScroll {
   const lenisRef = useRef<Lenis | null>(null)
   const triggerRef = useRef<ScrollTrigger | null>(null)
@@ -42,7 +43,7 @@ export function useFlightScroll(
 
   useEffect(() => {
     if (!enabled) return
-    const lenis = new Lenis()
+    const lenis = new Lenis({ smoothWheel: !reducedMotion })
     lenisRef.current = lenis
     lenis.on('scroll', ScrollTrigger.update)
     const tick = (time: number) => lenis.raf(time * 1000)
@@ -67,7 +68,7 @@ export function useFlightScroll(
       lenis.destroy()
       lenisRef.current = null
     }
-  }, [enabled, progressRef])
+  }, [enabled, progressRef, reducedMotion])
 
   useEffect(() => {
     lockedRef.current = locked
@@ -75,31 +76,38 @@ export function useFlightScroll(
     else lenisRef.current?.start()
   }, [locked, enabled])
 
-  const scrollTo = useCallback((progress: number, still?: [number, number]) => {
-    const trigger = triggerRef.current
-    const lenis = lenisRef.current
-    if (!trigger || !lenis || performance.now() < busyUntil.current) return
-    const span = trigger.end - trigger.start
-    const target = trigger.start + progress * span
-    if (still) {
-      const [from, until] = still.map((edge) => trigger.start + edge * span)
-      if (lenis.scroll >= from && lenis.scroll <= until) {
-        const edge = target > lenis.scroll ? until : from
-        const inset = STILL_EDGE * window.innerHeight * Math.sign(lenis.scroll - edge)
-        lenis.scrollTo(edge + inset, SNAP)
+  const scrollTo = useCallback(
+    (progress: number, still?: [number, number]) => {
+      const trigger = triggerRef.current
+      const lenis = lenisRef.current
+      if (!trigger || !lenis || performance.now() < busyUntil.current) return
+      const span = trigger.end - trigger.start
+      const target = trigger.start + progress * span
+      if (reducedMotion) {
+        lenis.scrollTo(target, SNAP)
+        return
       }
-    }
-    const svh = Math.abs(target - lenis.scroll) / window.innerHeight
-    const duration = Math.min(MAX_TRAVEL_S, Math.max(MIN_TRAVEL_S, svh * SECONDS_PER_SVH))
-    busyUntil.current = performance.now() + duration * 1000 + TRAVEL_MARGIN_MS
-    lenis.scrollTo(target, {
-      duration,
-      easing: travelEase,
-      onComplete: () => {
-        busyUntil.current = 0
-      },
-    })
-  }, [])
+      if (still) {
+        const [from, until] = still.map((edge) => trigger.start + edge * span)
+        if (lenis.scroll >= from && lenis.scroll <= until) {
+          const edge = target > lenis.scroll ? until : from
+          const inset = STILL_EDGE * window.innerHeight * Math.sign(lenis.scroll - edge)
+          lenis.scrollTo(edge + inset, SNAP)
+        }
+      }
+      const svh = Math.abs(target - lenis.scroll) / window.innerHeight
+      const duration = Math.min(MAX_TRAVEL_S, Math.max(MIN_TRAVEL_S, svh * SECONDS_PER_SVH))
+      busyUntil.current = performance.now() + duration * 1000 + TRAVEL_MARGIN_MS
+      lenis.scrollTo(target, {
+        duration,
+        easing: travelEase,
+        onComplete: () => {
+          busyUntil.current = 0
+        },
+      })
+    },
+    [reducedMotion],
+  )
 
   const glideTo = useCallback((progress: number, seconds: number) => {
     const trigger = triggerRef.current

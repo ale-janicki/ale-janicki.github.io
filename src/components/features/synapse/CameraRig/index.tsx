@@ -24,11 +24,11 @@ interface CameraRigProps {
   progressRef: RefObject<number>
   flightRef: RefObject<FlightRequest | null>
   focus: number | null
-  animated: boolean
+  reducedMotion: boolean
 }
 
 const PARALLAX = 0.022
-const STATIC_TIME = 3.7
+const CALM_TIME_SCALE = 0.25
 
 function scaleContent(frame: Frame, factor: number): void {
   frame.caption *= factor
@@ -45,7 +45,7 @@ export function CameraRig({
   progressRef,
   flightRef,
   focus,
-  animated,
+  reducedMotion,
 }: CameraRigProps) {
   const state = useRef({
     progress: 0,
@@ -114,7 +114,7 @@ export function CameraRig({
     s.view.aspect = aspect
     s.view.width = size.width
 
-    if (animated && !s.flying && flightRef.current) {
+    if (!s.flying && flightRef.current) {
       const request = flightRef.current
       flightRef.current = null
       timeline.sample(request.progress, s.view, s.target)
@@ -146,15 +146,13 @@ export function CameraRig({
       onArrive()
     }
 
-    if (animated) {
-      if (s.flying) s.elapsed += dt
-      else s.progress = MathUtils.damp(s.progress, progressRef.current, PROGRESS_DAMPING, dt)
-      frame.time += dt
-      s.blend = MathUtils.damp(s.blend, s.focus !== null ? 1 : 0, 2.6, dt)
-    } else {
-      frame.time = STATIC_TIME
-    }
-    timeline.sample(animated ? s.progress : 0, s.view, frame)
+    const focusTarget = s.focus !== null ? 1 : 0
+    if (s.flying) s.elapsed += dt
+    else if (reducedMotion) s.progress = progressRef.current
+    else s.progress = MathUtils.damp(s.progress, progressRef.current, PROGRESS_DAMPING, dt)
+    frame.time += reducedMotion ? dt * CALM_TIME_SCALE : dt
+    s.blend = reducedMotion ? focusTarget : MathUtils.damp(s.blend, focusTarget, 2.6, dt)
+    timeline.sample(s.progress, s.view, frame)
 
     const lastFocus = s.lastFocus
     if (s.blend > 0.001 && lastFocus !== null) {
@@ -206,8 +204,9 @@ export function CameraRig({
     camera.lookAt(look)
     const distance = position.distanceTo(look)
     const halfHeight = distance * TAN_HALF
-    camera.translateX(-shiftX * halfHeight * aspect + s.smoothX * PARALLAX * distance)
-    camera.translateY(-shiftY * halfHeight + s.smoothY * PARALLAX * distance * 0.6)
+    const parallax = reducedMotion ? 0 : PARALLAX
+    camera.translateX(-shiftX * halfHeight * aspect + s.smoothX * parallax * distance)
+    camera.translateY(-shiftY * halfHeight + s.smoothY * parallax * distance * 0.6)
   })
 
   return null
