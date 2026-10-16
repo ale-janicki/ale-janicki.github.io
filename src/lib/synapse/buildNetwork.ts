@@ -23,8 +23,8 @@ import {
 import { createRandom, gaussian, type Random } from './random'
 import { HOLD_BACK, HOLD_LIFT, HOLD_SIDE } from './timeline'
 
-export const TRAIL_TICKS = 4
-export const RHYTHM_PERIOD = 1.6
+const TRAIL_TICKS = 4
+const RHYTHM_PERIOD = 1.6
 export const RHYTHM_RUN = 0.9
 
 const SEED = 20241015
@@ -114,7 +114,7 @@ const MOBILE_DETAIL: Detail = {
   techReach: TECH_REACH_MOBILE,
 }
 
-export interface NeuronBuffers {
+interface NeuronBuffers {
   position: Float32Array
   color: Float32Array
   scale: Float32Array
@@ -122,13 +122,13 @@ export interface NeuronBuffers {
   meta: Float32Array
 }
 
-export interface LineBuffers {
+interface LineBuffers {
   position: Float32Array
   color: Float32Array
   layer: Float32Array
 }
 
-export interface ImpulseBuffers {
+interface ImpulseBuffers {
   p0: Float32Array
   p1: Float32Array
   p2: Float32Array
@@ -138,7 +138,7 @@ export interface ImpulseBuffers {
   shape: Float32Array
 }
 
-export interface TechAnchor {
+interface TechAnchor {
   label: string
   position: Vector3
   at: number
@@ -620,7 +620,7 @@ function addCluster(
   bright: Color,
   random: Random,
 ): void {
-  const side = new Vector3().crossVectors(tangent, new Vector3(0, 1, 0)).normalize()
+  const side = new Vector3().crossVectors(tangent, HERO_UP).normalize()
   const lift = new Vector3().crossVectors(side, tangent).normalize()
   const subs: Vector3[] = []
   for (let i = 0; i < CLUSTER_SIZE; i++) {
@@ -663,7 +663,7 @@ function addRing(
   color: Color,
   random: Random,
 ): void {
-  const side = new Vector3().crossVectors(tangent, new Vector3(0, 1, 0)).normalize()
+  const side = new Vector3().crossVectors(tangent, HERO_UP).normalize()
   const lift = new Vector3().crossVectors(side, tangent).normalize()
   for (let i = 0; i < RING_SIZE; i++) {
     const angle = (i / RING_SIZE) * Math.PI * 2

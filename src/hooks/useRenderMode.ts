@@ -1,7 +1,7 @@
 import { supportsWebGL } from '@/lib/supportsWebGL'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 
-export type RenderMode = 'flight' | 'static' | 'fallback'
+type RenderMode = 'flight' | 'static' | 'fallback'
 
 export function useRenderMode(sceneFailed: boolean): RenderMode {
   const reducedMotion = useReducedMotion()

@@ -1,4 +1,4 @@
-export interface Domain {
+interface Domain {
   id: string
   name: string
   items: string[]

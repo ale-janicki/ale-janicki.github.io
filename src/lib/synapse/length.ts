@@ -30,6 +30,10 @@ export function timelineLength(branchCount: number): number {
   )
 }
 
+export const PRESENTATION_ACT = 1
+export const BRAIN_ACT = 2
+export const FIRST_BRANCH_ACT = 3
+
 export interface Act {
   label: string
   begin: number

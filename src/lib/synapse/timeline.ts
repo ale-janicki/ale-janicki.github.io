@@ -12,9 +12,9 @@ import {
 import { arcOf, buildRoute, pointAt, type Route } from './route'
 
 export const CAMERA_FOV = 55
-export const CONTENT_MAX = 1280
+const CONTENT_MAX = 1280
 
-const TAN_HALF = Math.tan(MathUtils.degToRad(CAMERA_FOV / 2))
+export const TAN_HALF = Math.tan(MathUtils.degToRad(CAMERA_FOV / 2))
 const WIDE_MARGIN = 0.94
 const UP = new Vector3(0, 1, 0)
 const HERO_DISTANCE = 3
@@ -46,12 +46,12 @@ export const HOLD_BACK = 1.5
 export const HOLD_SIDE = 1.6
 export const HOLD_LIFT = 0.6
 
-export interface View {
+interface View {
   aspect: number
   width: number
 }
 
-export interface Pose {
+interface Pose {
   position: Vector3
   look: Vector3
   shiftX: number
@@ -118,11 +118,11 @@ export function createFrame(): Frame {
   }
 }
 
-export function fitDistance(halfWidth: number, halfHeight: number, aspect: number): number {
+function fitDistance(halfWidth: number, halfHeight: number, aspect: number): number {
   return Math.max(halfWidth / (TAN_HALF * aspect), halfHeight / TAN_HALF)
 }
 
-export function columnShift(view: View, fraction: number): number {
+function columnShift(view: View, fraction: number): number {
   const span = Math.min(view.width, CONTENT_MAX)
   return (2 * ((view.width - span) / 2 + span * fraction)) / view.width - 1
 }
@@ -164,10 +164,6 @@ export function createTimeline(network: NetworkLayout): Timeline {
   const junctionArcs: number[] = []
   const techArcs: number[][] = []
   const endTangents = branches.map((branch) => branch.curve.getTangent(1))
-  let captionWindow: Window = [0, 0, 0, 0]
-  let domainWindow: Window = [0, 0, 0, 0]
-  let contactWindow: [number, number] = [0, 0]
-  let tipsWindow: Window = [0, 0, 0, 0]
   const effects = {
     landing: [0, 0],
     open: [0, 0],
@@ -298,19 +294,19 @@ export function createTimeline(network: NetworkLayout): Timeline {
   const wideHold = push(LENGTHS.wideHold, widePose, widePose)
   effects.landing = [intro.start + 0.05, intro.end - 0.05]
   effects.open = [toWide.start + 0.05, toWide.end - 0.15]
-  tipsWindow = [
+  const tipsWindow: Window = [
     intro.start + 0.5 * LENGTHS.intro,
     presentation.start + 0.1,
     presentation.end - 0.05,
     toWide.start + 0.35,
   ]
-  captionWindow = [
+  const captionWindow: Window = [
     toWide.start + 0.6,
     wideHold.start + 0.1,
     wideHold.end - 0.05,
     wideHold.end + 0.3,
   ]
-  domainWindow = [
+  const domainWindow: Window = [
     toWide.start + 0.75,
     wideHold.start + 0.1,
     wideHold.end - 0.1,
@@ -345,7 +341,10 @@ export function createTimeline(network: NetworkLayout): Timeline {
     toContact.start + 0.1 * LENGTHS.toContact,
     toContact.start + 0.7 * LENGTHS.toContact,
   ]
-  contactWindow = [toContact.start + 0.55 * LENGTHS.toContact, contactHold.start + 0.1]
+  const contactWindow: [number, number] = [
+    toContact.start + 0.55 * LENGTHS.toContact,
+    contactHold.start + 0.1,
+  ]
   if (enters.length > 0) {
     effects.inside = [enters[0].start + 0.1 * LENGTHS.enter, enters[0].start + 0.5 * LENGTHS.enter]
   }

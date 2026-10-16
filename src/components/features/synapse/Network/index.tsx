@@ -36,6 +36,20 @@ function createUniforms(isMobile: boolean) {
   }
 }
 
+function writeFrame(material: ShaderMaterial | null, frame: Frame, aspect: number): void {
+  if (!material) return
+  const u = material.uniforms
+  u.uTime.value = frame.time
+  u.uOpen.value = frame.open
+  u.uInside.value = frame.inside
+  u.uFocus.value.copy(frame.pose.look)
+  u.uPaths.value = frame.paths
+  u.uAspect.value = aspect
+  u.uCursor.value.copy(frame.cursor)
+  u.uNodeGlow.value.set(frame.cards)
+  u.uHero.value.set(frame.hero)
+}
+
 export function Network({ network, frameRef, isMobile }: NetworkProps) {
   const dpr = useThree((state) => state.viewport.dpr)
   const [uniforms] = useState(() => createUniforms(isMobile))
@@ -62,19 +76,10 @@ export function Network({ network, frameRef, isMobile }: NetworkProps) {
 
   useFrame(({ size }) => {
     const frame = frameRef.current
-    for (const material of [neuronRef.current, lineRef.current, impulseRef.current]) {
-      if (!material) continue
-      const u = material.uniforms
-      u.uTime.value = frame.time
-      u.uOpen.value = frame.open
-      u.uInside.value = frame.inside
-      u.uFocus.value.copy(frame.pose.look)
-      u.uPaths.value = frame.paths
-      u.uAspect.value = size.width / size.height
-      u.uCursor.value.copy(frame.cursor)
-      u.uNodeGlow.value.set(frame.cards)
-      u.uHero.value.set(frame.hero)
-    }
+    const aspect = size.width / size.height
+    writeFrame(neuronRef.current, frame, aspect)
+    writeFrame(lineRef.current, frame, aspect)
+    writeFrame(impulseRef.current, frame, aspect)
   })
 
   return (

@@ -15,7 +15,7 @@ const MIN_CYCLE = 4
 const CYCLE_SPAN = 4
 const OFFSET_SPAN = 8
 
-export interface SatelliteSlot {
+interface SatelliteSlot {
   position: Vector3
   cycle: number
   offset: number

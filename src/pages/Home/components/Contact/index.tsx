@@ -1,5 +1,6 @@
 import { Section } from '@/components/layout/Section'
 import type { Profile } from '@/content/profile'
+import { externalLinkProps } from '@/lib/externalLink'
 import styles from './styles.module.css'
 
 interface ContactProps {
@@ -17,9 +18,7 @@ export function Contact({ profile }: ContactProps) {
             <a
               className={styles.link}
               href={contact.href}
-              {...(contact.href.startsWith('http')
-                ? { target: '_blank', rel: 'noopener noreferrer' }
-                : {})}
+              {...externalLinkProps(contact.href)}
             >
               <span className={`mono ${styles.label}`}>{contact.label}</span>
               <span className={styles.value}>{contact.value}</span>

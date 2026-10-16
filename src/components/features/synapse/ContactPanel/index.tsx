@@ -3,6 +3,7 @@ import { Html } from '@react-three/drei'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { profile } from '@/content/profile'
 import { useFadeRef } from '@/hooks/useFadeRef'
+import { externalLinkProps } from '@/lib/externalLink'
 import type { Frame } from '@/lib/synapse/timeline'
 import styles from './styles.module.css'
 
@@ -47,9 +48,7 @@ export function ContactPanel({ frameRef, nav, navIndex }: ContactPanelProps) {
                 <a
                   className={styles.link}
                   href={contact.href}
-                  {...(contact.href.startsWith('http')
-                    ? { target: '_blank', rel: 'noopener noreferrer' }
-                    : {})}
+                  {...externalLinkProps(contact.href)}
                 >
                   <span className={`mono ${styles.label}`}>{contact.label}</span>
                   <span className={styles.value}>{contact.value}</span>

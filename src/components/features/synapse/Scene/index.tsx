@@ -15,13 +15,10 @@ import { experience } from '@/content/experience'
 import { buildNetwork } from '@/lib/synapse/buildNetwork'
 import { domainRegion } from '@/lib/synapse/brain'
 import type { FlightRequest } from '@/lib/synapse/flight'
-import { MAX_DOMAINS, MAX_MILESTONES } from '@/lib/synapse/length'
+import { BRAIN_ACT, FIRST_BRANCH_ACT, MAX_DOMAINS, MAX_MILESTONES } from '@/lib/synapse/length'
 import { CAMERA_FOV, createFrame, createTimeline } from '@/lib/synapse/timeline'
 import type { Project } from '@/types/project'
 import styles from './styles.module.css'
-
-const BRAIN_ACT = 2
-const FIRST_BRANCH_ACT = 3
 
 interface SceneProps {
   animated: boolean

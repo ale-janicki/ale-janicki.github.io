@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber'
 import { MathUtils, Quaternion, Vector3 } from 'three'
 import { easeInOutCubic, type FlightRequest } from '@/lib/synapse/flight'
 import {
-  CAMERA_FOV,
+  TAN_HALF,
   blendPose,
   createPose,
   createFrame,
@@ -27,7 +27,6 @@ interface CameraRigProps {
   animated: boolean
 }
 
-const TAN_HALF = Math.tan(MathUtils.degToRad(CAMERA_FOV / 2))
 const PARALLAX = 0.022
 const STATIC_TIME = 3.7
 
@@ -165,9 +164,7 @@ export function CameraRig({
       frame.open = MathUtils.lerp(frame.open, 1, eased)
       frame.paths = MathUtils.lerp(frame.paths, 1, eased)
       frame.inside = MathUtils.lerp(frame.inside, 1, eased)
-      frame.cards.forEach((value, index) => {
-        frame.cards[index] = value * (1 - eased)
-      })
+      for (let i = 0; i < frame.cards.length; i++) frame.cards[i] *= 1 - eased
       frame.hero.fill(-1)
       frame.techs.fill(0)
     }

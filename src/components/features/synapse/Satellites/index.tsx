@@ -13,6 +13,12 @@ interface SatellitesProps {
   isMobile: boolean
 }
 
+function writeFrame(material: ShaderMaterial | null, frame: Frame, index: number): void {
+  if (!material) return
+  material.uniforms.uTime.value = frame.time
+  material.uniforms.uPresence.value = frame.cards[index]
+}
+
 export function Satellites({ frameRef, center, index, color, isMobile }: SatellitesProps) {
   const dpr = useThree((state) => state.viewport.dpr)
   const slots = useMemo(() => buildSatellites(center), [center])
@@ -66,11 +72,8 @@ export function Satellites({ frameRef, center, index, color, isMobile }: Satelli
 
   useFrame(() => {
     const frame = frameRef.current
-    for (const material of [pointRef.current, spokeRef.current]) {
-      if (!material) continue
-      material.uniforms.uTime.value = frame.time
-      material.uniforms.uPresence.value = frame.cards[index]
-    }
+    writeFrame(pointRef.current, frame, index)
+    writeFrame(spokeRef.current, frame, index)
   })
 
   return (

@@ -200,12 +200,11 @@ const PATHWAY_REGIONS: Vector3[] = [
 ]
 const DEPTH_LIMIT = 0.7
 
-const SIDE_UP = new Vector3(0, 1, 0)
 const SIDE_FALLBACK_LIMIT = 0.8
 
 export function sideOf(direction: Vector3, out: Vector3): Vector3 {
   return out
-    .crossVectors(direction, Math.abs(direction.y) > SIDE_FALLBACK_LIMIT ? X_AXIS : SIDE_UP)
+    .crossVectors(direction, Math.abs(direction.y) > SIDE_FALLBACK_LIMIT ? X_AXIS : Y_AXIS)
     .normalize()
 }
 

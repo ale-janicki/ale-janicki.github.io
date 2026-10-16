@@ -1,4 +1,4 @@
-export type BranchVisual = 'cluster' | 'rhythm' | 'detect' | 'core'
+type BranchVisual = 'cluster' | 'rhythm' | 'detect' | 'core'
 
 export interface Branch {
   color: string

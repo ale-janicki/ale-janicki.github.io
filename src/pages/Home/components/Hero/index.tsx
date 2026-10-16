@@ -6,7 +6,7 @@ import { Section } from '@/components/layout/Section'
 import { Button } from '@/components/ui/Button'
 import { experience } from '@/content/experience'
 import type { Profile } from '@/content/profile'
-import { LENGTHS } from '@/lib/synapse/length'
+import { LENGTHS, PRESENTATION_ACT } from '@/lib/synapse/length'
 import styles from './styles.module.css'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -14,7 +14,6 @@ gsap.registerPlugin(ScrollTrigger)
 const PRESENT_STEPS = 200
 const LIFT_END = 0.7
 const DOCK_PHOTO = 38
-const PRESENTATION_ACT = 1
 const PAIR_ON = 0.9
 const PAIR_OFF = 0.3
 
@@ -146,10 +145,10 @@ function FlightHero({
       if (exit !== exited) {
         exited = exit
         card.style.setProperty('--exit', String(smooth(exit / PRESENT_STEPS)))
-        const gone = exit >= PRESENT_STEPS
-        if (gone !== hidden) {
-          hidden = gone
-          card.dataset.exit = gone ? 'on' : 'off'
+        const exitDone = exit >= PRESENT_STEPS
+        if (exitDone !== hidden) {
+          hidden = exitDone
+          card.dataset.exit = exitDone ? 'on' : 'off'
         }
       }
       const pairing = present >= PRESENT_STEPS * PAIR_ON && leave <= PRESENT_STEPS * PAIR_OFF

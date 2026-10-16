@@ -37,6 +37,13 @@ export function Milestone({
   const activate = () => onActivate(index)
   const release = () => onActivate(null)
   const toggle = () => onPin(pinned ? null : index)
+  const details = entry.details.length > 0 && (
+    <ul className={styles.details}>
+      {entry.details.map((detail) => (
+        <li key={detail}>{detail}</li>
+      ))}
+    </ul>
+  )
 
   useEffect(() => {
     if (!sheetOpen) return
@@ -89,13 +96,7 @@ export function Milestone({
           <p className={styles.role}>{entry.role}</p>
           <div className={styles.more}>
             <p className={styles.line}>{entry.line}</p>
-            {entry.details.length > 0 && (
-              <ul className={styles.details}>
-                {entry.details.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            )}
+            {details}
           </div>
         </div>
       </div>
@@ -111,13 +112,7 @@ export function Milestone({
             <p className={styles.org}>{entry.org}</p>
             <p className={styles.sheetRole}>{entry.role}</p>
             <p className={styles.line}>{entry.line}</p>
-            {entry.details.length > 0 && (
-              <ul className={styles.details}>
-                {entry.details.map((detail) => (
-                  <li key={detail}>{detail}</li>
-                ))}
-              </ul>
-            )}
+            {details}
             <Button variant="ghost" size="sm" className={styles.close} onClick={() => onPin(null)}>
               Close
             </Button>

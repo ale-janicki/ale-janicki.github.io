@@ -16,12 +16,13 @@ const TRAVEL_MARGIN_MS = 150
 const STILL_EDGE = 0.02
 
 const RESPONSIVE_BLEND = 0.5
+const SNAP = { immediate: true, force: true }
 
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
 const travelEase = (t: number) =>
   RESPONSIVE_BLEND * easeOutCubic(t) + (1 - RESPONSIVE_BLEND) * easeInOutCubic(t)
 
-export interface FlightScroll {
+interface FlightScroll {
   scrollTo: (progress: number, still?: [number, number]) => void
   glideTo: (progress: number, seconds: number) => void
   settleAt: (progress: number) => void
@@ -85,7 +86,7 @@ export function useFlightScroll(
       if (lenis.scroll >= from && lenis.scroll <= until) {
         const edge = target > lenis.scroll ? until : from
         const inset = STILL_EDGE * window.innerHeight * Math.sign(lenis.scroll - edge)
-        lenis.scrollTo(edge + inset, { immediate: true, force: true })
+        lenis.scrollTo(edge + inset, SNAP)
       }
     }
     const svh = Math.abs(target - lenis.scroll) / window.innerHeight
@@ -116,7 +117,7 @@ export function useFlightScroll(
       value: target,
       duration: seconds,
       ease: easeInOutCubic,
-      onUpdate: () => lenis.scrollTo(position.value, { immediate: true, force: true }),
+      onUpdate: () => lenis.scrollTo(position.value, SNAP),
     })
   }, [])
 
@@ -128,10 +129,7 @@ export function useFlightScroll(
       glideRef.current = null
       flyingRef.current = false
       if (!trigger || !lenis) return
-      lenis.scrollTo(trigger.start + progress * (trigger.end - trigger.start), {
-        immediate: true,
-        force: true,
-      })
+      lenis.scrollTo(trigger.start + progress * (trigger.end - trigger.start), SNAP)
       progressRef.current = progress
       if (!lockedRef.current) lenis.start()
     },

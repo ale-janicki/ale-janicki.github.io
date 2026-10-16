@@ -5,7 +5,7 @@ const PASSES = 150
 const CORNER_RADIUS = 1
 const STEP = 0.02
 
-export interface Leg {
+interface Leg {
   curve: CubicBezierCurve3
   from: number
   to: number

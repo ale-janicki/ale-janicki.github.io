@@ -13,7 +13,15 @@ import { useIsMobile } from '@/hooks/useIsMobile'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useRenderMode } from '@/hooks/useRenderMode'
 import { FLIGHT_SECONDS, type FlightRequest } from '@/lib/synapse/flight'
-import { LENGTHS, MAX_BRANCHES, PRELUDE, flightActs, timelineLength } from '@/lib/synapse/length'
+import {
+  FIRST_BRANCH_ACT,
+  LENGTHS,
+  MAX_BRANCHES,
+  PRELUDE,
+  PRESENTATION_ACT,
+  flightActs,
+  timelineLength,
+} from '@/lib/synapse/length'
 import { Contact } from './components/Contact'
 import { Hero } from './components/Hero'
 import { ProjectsSection } from './components/ProjectsSection'
@@ -21,12 +29,11 @@ import styles from './styles.module.css'
 
 const Scene = lazy(() => import('@/components/features/synapse/Scene'))
 
-const FIRST_BRANCH_ACT = 3
 const LANDING_EPSILON = 0.001
 const branches = projects.slice(0, MAX_BRANCHES)
 const flightLength = timelineLength(branches.length)
 const acts = flightActs(branches.map((project) => project.name))
-const meetStop = acts[1].stop / flightLength
+const meetStop = acts[PRESENTATION_ACT].stop / flightLength
 const contactStop = acts[acts.length - 1].stop / flightLength
 const contactStart = acts[acts.length - 1].still[0]
 const brandExit: [number, number] = [
