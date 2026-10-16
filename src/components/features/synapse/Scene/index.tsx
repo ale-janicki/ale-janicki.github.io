@@ -15,6 +15,7 @@ import { experience } from '@/content/experience'
 import { buildNetwork } from '@/lib/synapse/buildNetwork'
 import { domainRegion } from '@/lib/synapse/brain'
 import type { FlightRequest } from '@/lib/synapse/flight'
+import type { Fold } from '@/lib/synapse/region'
 import { BRAIN_ACT, FIRST_BRANCH_ACT, MAX_DOMAINS, MAX_MILESTONES } from '@/lib/synapse/length'
 import { CAMERA_FOV, createFrame, createTimeline } from '@/lib/synapse/timeline'
 import type { Project } from '@/types/project'
@@ -23,6 +24,7 @@ import styles from './styles.module.css'
 interface SceneProps {
   reducedMotion: boolean
   isMobile: boolean
+  fold: Fold | null
   branches: Project[]
   progressRef: RefObject<number>
   flightRef: RefObject<FlightRequest | null>
@@ -40,6 +42,7 @@ function focusIndexOf(activeId: string | null, branches: Project[]): number | nu
 export default function Scene({
   reducedMotion,
   isMobile,
+  fold,
   branches,
   progressRef,
   flightRef,
@@ -79,6 +82,7 @@ export default function Scene({
           progressRef={progressRef}
           flightRef={flightRef}
           focus={focus}
+          fold={fold}
           reducedMotion={reducedMotion}
         />
         <Network network={network} frameRef={frameRef} isMobile={isMobile} />
@@ -99,6 +103,7 @@ export default function Scene({
                 branch={branch}
                 index={index}
                 frameRef={frameRef}
+                fold={fold}
                 hidden={activeId !== null}
                 nav={nav}
                 navIndex={index + FIRST_BRANCH_ACT}
@@ -146,6 +151,7 @@ export default function Scene({
             <Caption
               position={[0, -network.extent.y * 1.02, 0]}
               frameRef={frameRef}
+              fold={fold}
               nav={nav}
               navIndex={BRAIN_ACT}
             >

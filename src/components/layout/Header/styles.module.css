@@ -9,6 +9,11 @@
   justify-content: space-between;
   padding: var(--space-4) calc(max(0px, (100% - var(--page-max)) / 2) + var(--space-4));
 
+  @media (max-width: 359px) {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
   @media (min-width: 768px) {
     padding-block: var(--space-5);
     padding-inline: calc(max(0px, (100% - var(--page-max)) / 2) + var(--space-8));
@@ -84,6 +89,10 @@
     gap: var(--space-5);
   }
 
+  @media (max-width: 359px) {
+    gap: var(--space-3);
+  }
+
   &[data-exit='on'] {
     visibility: hidden;
   }
@@ -106,6 +115,10 @@
     0 0 0 2px var(--color-accent),
     0 0 28px var(--color-core-glow);
   pointer-events: auto;
+
+  @media (max-width: 359px) {
+    width: 3.5rem;
+  }
 }
 
 .meta {
@@ -122,7 +135,7 @@
   pointer-events: auto;
 
   @media (max-width: 767px) {
-    font-size: 1.625rem;
+    font-size: clamp(1.25rem, 7.5vw - 1px, 1.625rem);
     white-space: nowrap;
   }
 
@@ -149,6 +162,10 @@
     white-space: normal;
     text-wrap: balance;
   }
+
+  @media (max-width: 359px) {
+    display: none;
+  }
 }
 
 .actions {
@@ -157,6 +174,10 @@
 
   @media (max-width: 767px) {
     gap: var(--space-1);
+  }
+
+  @media (max-width: 359px) {
+    margin-left: auto;
   }
 }
 
@@ -172,4 +193,39 @@
   @media (max-width: 767px) {
     display: none;
   }
+}
+
+:global(:root[data-fold='columns']) .card {
+  gap: var(--space-3);
+}
+
+:global(:root[data-fold='columns']) .cardPhoto {
+  width: 4.5rem;
+}
+
+:global(:root[data-fold='columns']) .cardName {
+  font-size: clamp(1.125rem, 3vw, 1.625rem);
+  white-space: nowrap;
+}
+
+:global(:root[data-fold='rows']) .cardName {
+  font-size: 1.625rem;
+  white-space: nowrap;
+}
+
+:global(:root[data-fold='columns']) .cardTitle {
+  font-size: calc(
+    var(--text-xs) * (1 - var(--dock)) + var(--docked-title-mobile) / var(--s2, 1) * var(--dock)
+  );
+  line-height: 1.25;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+:global(:root[data-fold='columns']) .titlePart {
+  display: block;
+}
+
+:global(:root[data-fold='columns']) .titleDot {
+  display: none;
 }

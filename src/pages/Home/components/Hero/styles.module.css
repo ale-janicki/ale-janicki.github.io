@@ -6,6 +6,10 @@
   @media (min-width: 768px) {
     gap: var(--space-5);
   }
+
+  @media (max-width: 359px) {
+    gap: var(--space-3);
+  }
 }
 
 .photo {
@@ -19,6 +23,10 @@
   box-shadow:
     0 0 0 2px var(--color-accent),
     0 0 28px var(--color-core-glow);
+
+  @media (max-width: 359px) {
+    width: 3.5rem;
+  }
 }
 
 .meta {
@@ -31,6 +39,10 @@
   font-weight: 700;
   line-height: 1.02;
   letter-spacing: -0.035em;
+
+  @media (max-width: 359px) {
+    font-size: clamp(1.25rem, 7.5vw - 1px, 2rem);
+  }
 }
 
 .title {
@@ -208,4 +220,45 @@
 
 .org {
   line-height: 1.4;
+}
+
+:global(:root[data-fold]) .sticky {
+  padding-top: var(--fold-top);
+  padding-left: var(--fold-left);
+}
+
+:global(:root[data-fold]) .sticky > section {
+  align-items: center;
+  min-height: calc(100svh - var(--fold-top));
+}
+
+:global(:root[data-fold]) .landing,
+:global(:root[data-fold]) .details {
+  align-self: center;
+}
+
+:global(:root[data-fold='columns']) .sticky {
+  padding-right: var(--space-4);
+}
+
+:global(:root[data-fold]) .pitch {
+  font-size: var(--text-base);
+  line-height: 1.5;
+}
+
+:global(:root[data-fold]) .now {
+  font-size: var(--text-sm);
+  line-height: 1.45;
+}
+
+:global(:root[data-fold]) .facts {
+  display: none;
+}
+
+:global(:root[data-fold='rows']) .now {
+  display: none;
+}
+
+:global(:root[data-fold='rows']) .cue {
+  display: none;
 }

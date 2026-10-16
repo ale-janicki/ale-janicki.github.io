@@ -40,6 +40,12 @@
   --page-max: 80rem;
   --inset: var(--space-4);
 
+  --fold-gutter: var(--space-8);
+  --fold-left: 0px;
+  --fold-top: 0px;
+  --fold-right: 0px;
+  --fold-scene-end: 100%;
+
   --radius-md: 0.75rem;
   --radius-lg: 1.25rem;
   --radius-full: 999px;
@@ -97,4 +103,30 @@ a {
 ::selection {
   background: var(--color-accent);
   color: var(--color-accent-contrast);
+}
+
+:root[data-fold='columns'] {
+  --fold-left: calc(50vw + var(--fold-gutter) / 2);
+  --fold-top: 4.5rem;
+  --fold-right: var(--space-8);
+  --fold-scene-end: calc(var(--fold-left) - var(--fold-gutter) / 2);
+}
+
+:root[data-fold='rows'] {
+  --fold-top: calc(50dvh + var(--fold-gutter) / 2);
+  --fold-scene-end: calc(var(--fold-top) - var(--fold-gutter) / 2);
+}
+
+@media (horizontal-viewport-segments: 2) {
+  :root[data-fold='columns'] {
+    --fold-left: env(viewport-segment-left 1 0, calc(50vw + var(--fold-gutter) / 2));
+    --fold-scene-end: env(viewport-segment-right 0 0, calc(50vw - var(--fold-gutter) / 2));
+  }
+}
+
+@media (vertical-viewport-segments: 2) {
+  :root[data-fold='rows'] {
+    --fold-top: env(viewport-segment-top 0 1, calc(50dvh + var(--fold-gutter) / 2));
+    --fold-scene-end: env(viewport-segment-bottom 0 0, calc(50dvh - var(--fold-gutter) / 2));
+  }
 }

@@ -138,3 +138,27 @@
     display: block;
   }
 }
+
+:global(:root[data-fold]) .rail {
+  top: calc((100dvh + var(--fold-top)) / 2);
+  right: var(--space-3);
+  bottom: auto;
+  left: auto;
+  transform: translateY(-50%);
+}
+
+:global(:root[data-fold]) .list {
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0;
+}
+
+:global(:root[data-fold]) .rail .label {
+  position: absolute;
+  display: block;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

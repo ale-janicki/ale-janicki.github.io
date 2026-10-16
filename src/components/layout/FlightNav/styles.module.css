@@ -28,3 +28,30 @@
 .verb {
   display: none;
 }
+
+@media (max-width: 359px) {
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+:global(:root[data-fold='columns']) .nav {
+  flex-wrap: wrap;
+}
+
+:global(:root[data-fold='columns']) .button {
+  flex: 1 1 auto;
+}
+
+:global(:root[data-fold]) .button {
+  min-width: 0;
+}
+
+:global(:root[data-fold]) .label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

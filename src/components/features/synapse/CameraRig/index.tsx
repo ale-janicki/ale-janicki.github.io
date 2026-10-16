@@ -2,6 +2,7 @@ import { useEffect, useRef, type RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { MathUtils, Quaternion, Vector3 } from 'three'
 import { easeInOutCubic, type FlightRequest } from '@/lib/synapse/flight'
+import { sceneRegion, type Fold } from '@/lib/synapse/region'
 import {
   TAN_HALF,
   blendPose,
@@ -24,6 +25,7 @@ interface CameraRigProps {
   progressRef: RefObject<number>
   flightRef: RefObject<FlightRequest | null>
   focus: number | null
+  fold: Fold | null
   reducedMotion: boolean
 }
 
@@ -45,6 +47,7 @@ export function CameraRig({
   progressRef,
   flightRef,
   focus,
+  fold,
   reducedMotion,
 }: CameraRigProps) {
   const state = useRef({
@@ -56,6 +59,8 @@ export function CameraRig({
     smoothY: 0,
     focus: null as number | null,
     lastFocus: null as number | null,
+    fold: null as Fold | null,
+    sized: { width: 0, height: 0, fold: null as Fold | null },
     focusPose: createPose(),
     view: createView(),
     quiet: 0,
@@ -85,6 +90,10 @@ export function CameraRig({
   }, [focus])
 
   useEffect(() => {
+    state.current.fold = fold
+  }, [fold])
+
+  useEffect(() => {
     const handleMove = (event: PointerEvent) => {
       state.current.pointerX = (event.clientX / window.innerWidth) * 2 - 1
       state.current.pointerY = -((event.clientY / window.innerHeight) * 2 - 1)
@@ -111,8 +120,16 @@ export function CameraRig({
     const frame = frameRef.current
     const dt = Math.min(delta, 0.05)
     const aspect = size.width / size.height
-    s.view.aspect = aspect
-    s.view.width = size.width
+    const { view, sized } = s
+    if (sized.width !== size.width || sized.height !== size.height || sized.fold !== s.fold) {
+      sized.width = size.width
+      sized.height = size.height
+      sized.fold = s.fold
+      sceneRegion(s.fold, size.width, size.height, view.region)
+    }
+    view.split = s.fold !== null
+    view.width = size.width * view.region.width
+    view.aspect = view.width / (size.height * view.region.height)
 
     if (!s.flying && flightRef.current) {
       const request = flightRef.current

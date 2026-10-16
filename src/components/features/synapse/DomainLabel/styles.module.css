@@ -52,3 +52,17 @@
     display: none;
   }
 }
+
+:global(:root[data-fold]) .domain {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+}
+
+:global(:root[data-fold]) .name {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+}
+
+:global(:root[data-fold]) .items {
+  display: none;
+}

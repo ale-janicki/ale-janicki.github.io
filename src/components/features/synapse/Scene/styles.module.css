@@ -3,3 +3,11 @@
   inset: 0;
   z-index: var(--z-canvas);
 }
+
+:global(:root[data-fold='columns']) .scene canvas {
+  clip-path: inset(0 calc(100% - var(--fold-scene-end)) 0 0);
+}
+
+:global(:root[data-fold='rows']) .scene canvas {
+  clip-path: inset(0 0 calc(100% - var(--fold-scene-end)) 0);
+}

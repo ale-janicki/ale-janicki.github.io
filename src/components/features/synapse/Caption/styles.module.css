@@ -29,3 +29,11 @@
   margin-top: var(--space-4);
   transform: translateX(-50%);
 }
+
+:global(:root[data-fold]) .caption {
+  position: absolute;
+  top: calc((100% + var(--fold-top)) / 2);
+  left: calc((100% + var(--fold-left) - var(--fold-right)) / 2);
+  max-width: calc(100% - var(--fold-left) - var(--fold-right) - 2 * var(--space-4));
+  font-size: clamp(1.25rem, 3.2vw, 1.75rem);
+}

@@ -110,3 +110,14 @@
     transform: translateY(-50%) translateX(1.5rem);
   }
 }
+
+:global(:root[data-fold]) .panel {
+  top: auto;
+  right: calc(var(--fold-right) + var(--space-4));
+  bottom: var(--space-4);
+  left: calc(var(--fold-left) + var(--space-4));
+  width: auto;
+  max-height: calc(100dvh - var(--fold-top) - 2 * var(--space-4));
+  transform: none;
+  animation-name: panel-in;
+}

@@ -9,6 +9,7 @@ import { profile } from '@/content/profile'
 import { projects } from '@/content/projects'
 import { useFlightAct } from '@/hooks/useFlightAct'
 import { useFlightScroll } from '@/hooks/useFlightScroll'
+import { useFoldLayout } from '@/hooks/useFoldLayout'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useRenderMode } from '@/hooks/useRenderMode'
@@ -51,6 +52,7 @@ export function HomePage() {
   const [sceneFailed, setSceneFailed] = useState(false)
   const mode = useRenderMode(sceneFailed)
   const isMobile = useIsMobile()
+  const fold = useFoldLayout()
   const reducedMotion = useReducedMotion()
   const progressRef = useRef(0)
   const flightRef = useRef<FlightRequest | null>(null)
@@ -156,7 +158,8 @@ export function HomePage() {
           <Suspense fallback={<CssNetwork />}>
             <Scene
               reducedMotion={reducedMotion}
-              isMobile={isMobile}
+              isMobile={isMobile || fold !== null}
+              fold={fold}
               branches={branches}
               progressRef={progressRef}
               flightRef={flightRef}

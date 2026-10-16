@@ -143,3 +143,28 @@
 .pair {
   margin-top: var(--space-4);
 }
+
+:global(:root[data-fold]) .layer {
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--fold-top) 0;
+  padding-inline: calc(var(--fold-left) + var(--space-4)) calc(var(--fold-right) + var(--space-4));
+}
+
+:global(:root[data-fold]) .panel {
+  width: min(26rem, 100%);
+  max-height: calc(100dvh - var(--fold-top) - 2 * var(--space-4));
+  padding: var(--space-4);
+}
+
+:global(:root[data-fold='rows']) .panel {
+  width: min(40rem, 100%);
+}
+
+:global(:root[data-fold='rows']) .links {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+:global(:root[data-fold='rows']) .link {
+  grid-template-columns: 1fr;
+}

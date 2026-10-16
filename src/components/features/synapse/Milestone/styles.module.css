@@ -158,3 +158,34 @@
 .close {
   margin-top: var(--space-3);
 }
+
+:global(:root[data-fold]) .milestone {
+  left: 0.8rem;
+  max-width: 7.75rem;
+}
+
+:global(:root[data-fold]) .body {
+  padding-left: var(--space-2);
+}
+
+:global(:root[data-fold]) .period {
+  font-size: 0.625rem;
+  letter-spacing: 0;
+}
+
+:global(:root[data-fold]) .org {
+  font-size: var(--text-xs);
+}
+
+:global(:root[data-fold]) .role {
+  display: none;
+}
+
+:global(:root[data-fold]) .milestone .more {
+  display: none;
+}
+
+:global(:root[data-fold]) .sheet {
+  left: calc(var(--fold-left) + var(--space-4));
+  max-height: calc(100dvh - var(--fold-top) - 2 * var(--space-4));
+}

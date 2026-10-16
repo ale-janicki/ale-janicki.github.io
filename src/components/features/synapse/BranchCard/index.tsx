@@ -4,6 +4,8 @@ import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import type { BranchGeometry } from '@/lib/synapse/buildNetwork'
+import { screenCenter } from '@/lib/synapse/html'
+import type { Fold } from '@/lib/synapse/region'
 import type { Frame } from '@/lib/synapse/timeline'
 import styles from './styles.module.css'
 
@@ -11,6 +13,7 @@ interface BranchCardProps {
   branch: BranchGeometry
   index: number
   frameRef: RefObject<Frame>
+  fold: Fold | null
   hidden: boolean
   nav: FlightNavConfig
   navIndex: number
@@ -26,6 +29,7 @@ export function BranchCard({
   branch,
   index,
   frameRef,
+  fold,
   hidden,
   nav,
   navIndex,
@@ -63,7 +67,12 @@ export function BranchCard({
         <sphereGeometry args={[pointing ? 0.42 : 0.35, 12, 12]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
-      <Html zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+      <Html
+        fullscreen={fold !== null}
+        calculatePosition={fold ? screenCenter : undefined}
+        zIndexRange={[10, 0]}
+        style={{ pointerEvents: 'none' }}
+      >
         <div
           ref={ref}
           className={styles.wrap}

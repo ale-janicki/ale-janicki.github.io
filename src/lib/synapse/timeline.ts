@@ -10,6 +10,7 @@ import {
   MILESTONE_REACH_MOBILE,
 } from './length'
 import { arcOf, buildRoute, pointAt, type Route } from './route'
+import type { Region } from './region'
 
 export const CAMERA_FOV = 55
 const CONTENT_MAX = 1280
@@ -31,6 +32,7 @@ const FAN_TOP_MOBILE = 76
 const FAN_BOTTOM_MOBILE = 0.5
 const FAN_SPAN_MOBILE = 1.36
 const FAN_LABEL_HALF = 18
+const SPLIT_TOP = 72
 const WIDE_DIRECTION = new Vector3(-0.08, 0.28, 1).normalize()
 const CONTACT_DIRECTION = new Vector3(0.62, 0.2, 0.78).normalize()
 const CONTACT_COLUMN = 0.27
@@ -49,6 +51,8 @@ export const HOLD_LIFT = 0.6
 interface View {
   aspect: number
   width: number
+  split: boolean
+  region: Region
 }
 
 interface Pose {
@@ -97,7 +101,7 @@ export function createPose(): Pose {
 }
 
 export function createView(): View {
-  return { aspect: 1, width: 1 }
+  return { aspect: 1, width: 1, split: false, region: { left: 0, top: 0, width: 1, height: 1 } }
 }
 
 export function createFrame(): Frame {
@@ -120,6 +124,18 @@ export function createFrame(): Frame {
 
 function fitDistance(halfWidth: number, halfHeight: number, aspect: number): number {
   return Math.max(halfWidth / (TAN_HALF * aspect), halfHeight / TAN_HALF)
+}
+
+function beside(view: View): boolean {
+  return view.aspect >= 1 && !view.split
+}
+
+function splitRoom(view: View): number {
+  return Math.max(view.width / view.aspect - SPLIT_TOP - EDGE, 1)
+}
+
+function splitShift(view: View): number {
+  return -(SPLIT_TOP - EDGE) / (view.width / view.aspect)
 }
 
 function columnShift(view: View, fraction: number): number {
@@ -185,11 +201,11 @@ export function createTimeline(network: NetworkLayout): Timeline {
   }
 
   const landingPose: PoseFn = (out, view) => {
-    const landscape = view.aspect >= 1
+    const landscape = beside(view)
     const height = view.width / view.aspect
     const span = Math.min(view.width, CONTENT_MAX)
     const room = landscape ? span / 2 : view.width - 2 * EDGE
-    const available = landscape ? height : height * 0.46
+    const available = view.split ? splitRoom(view) : landscape ? height : height * 0.46
     const scale = Math.min(
       room / (2 * extent.x * WIDE_MARGIN),
       available / (2 * extent.y * WIDE_MARGIN),
@@ -197,11 +213,11 @@ export function createTimeline(network: NetworkLayout): Timeline {
     out.look.set(0, 0, 0)
     out.position.copy(WIDE_DIRECTION).multiplyScalar(height / 2 / (scale * TAN_HALF) + extent.z)
     out.shiftX = landscape ? columnShift(view, LANDING_COLUMN) : 0
-    out.shiftY = landscape ? 0 : 0.34
+    out.shiftY = landscape ? 0 : view.split ? splitShift(view) : 0.34
   }
 
   const presentationPose: PoseFn = (out, view) => {
-    const landscape = view.aspect >= 1
+    const landscape = beside(view)
     const height = view.width / view.aspect
     const span = Math.min(view.width, CONTENT_MAX)
     const reach = landscape ? MILESTONE_REACH : MILESTONE_REACH_MOBILE
@@ -212,33 +228,40 @@ export function createTimeline(network: NetworkLayout): Timeline {
     const capacity = (view.width - labels - left) / (reach.x + margin)
     const fitted = landscape
       ? Infinity
-      : (height * FAN_BOTTOM_MOBILE - FAN_TOP_MOBILE - 2 * FAN_LABEL_HALF) / FAN_SPAN_MOBILE
+      : view.split
+        ? (splitRoom(view) - 2 * FAN_LABEL_HALF) / FAN_SPAN_MOBILE
+        : (height * FAN_BOTTOM_MOBILE - FAN_TOP_MOBILE - 2 * FAN_LABEL_HALF) / FAN_SPAN_MOBILE
     const scale = Math.min(wanted, capacity, fitted)
     const ideal = landscape ? (view.width - span) / 2 + span * HERO_COLUMN : view.width * 0.35
     const center = Math.min(ideal, view.width - labels - reach.x * scale)
     out.look.copy(me)
     out.position.copy(me).addScaledVector(HERO_VIEW, height / 2 / (scale * TAN_HALF))
     out.shiftX = (2 * Math.max(center, left + margin * scale)) / view.width - 1
-    out.shiftY = landscape ? 0 : 1 - (FAN_TOP_MOBILE + height * FAN_BOTTOM_MOBILE) / height
+    out.shiftY = landscape
+      ? 0
+      : view.split
+        ? splitShift(view)
+        : 1 - (FAN_TOP_MOBILE + height * FAN_BOTTOM_MOBILE) / height
   }
 
   const widePose: PoseFn = (out, view) => {
+    const fill = view.split ? splitRoom(view) / (view.width / view.aspect) : 1
     out.look.set(0, 0, 0)
     out.position
       .copy(WIDE_DIRECTION)
       .multiplyScalar(
-        fitDistance(extent.x * WIDE_MARGIN, extent.y * WIDE_MARGIN, view.aspect) + extent.z,
+        fitDistance(extent.x * WIDE_MARGIN, extent.y * WIDE_MARGIN, view.aspect) / fill + extent.z,
       )
     out.shiftX = 0
-    out.shiftY = 0
+    out.shiftY = view.split ? splitShift(view) : 0
   }
 
   const contactPose: PoseFn = (out, view) => {
-    const landscape = view.aspect >= 1
+    const landscape = beside(view)
     const height = view.width / view.aspect
     const span = Math.min(view.width, CONTENT_MAX)
     const room = landscape ? span * CONTACT_ROOM : view.width - 2 * EDGE
-    const available = landscape ? height : height * 0.46
+    const available = view.split ? splitRoom(view) : landscape ? height : height * 0.46
     const scale = Math.min(
       room / (2 * extent.x * WIDE_MARGIN),
       available / (2 * extent.y * WIDE_MARGIN),
@@ -246,7 +269,7 @@ export function createTimeline(network: NetworkLayout): Timeline {
     out.look.set(0, 0, 0)
     out.position.copy(CONTACT_DIRECTION).multiplyScalar(height / 2 / (scale * TAN_HALF) + extent.z)
     out.shiftX = landscape ? columnShift(view, CONTACT_COLUMN) : 0
-    out.shiftY = landscape ? 0 : 0.34
+    out.shiftY = landscape ? 0 : view.split ? splitShift(view) : 0.34
   }
 
   const holdOffset = (index: number, view: View, out: Vector3): Vector3 => {
@@ -261,11 +284,11 @@ export function createTimeline(network: NetworkLayout): Timeline {
   }
 
   const holdPose = (index: number, out: Pose, view: View): void => {
-    const landscape = view.aspect >= 1
+    const landscape = beside(view)
     out.look.copy(branches[index].node)
     out.position.copy(branches[index].node).add(holdOffset(index, view, offset))
     out.shiftX = landscape ? columnShift(view, HOLD_COLUMN) : 0
-    out.shiftY = landscape ? 0 : 0.3
+    out.shiftY = landscape ? 0 : view.split ? splitShift(view) : 0.3
   }
 
   const chase = (index: number, arc: number, out: Pose, view: View): void => {
@@ -278,6 +301,14 @@ export function createTimeline(network: NetworkLayout): Timeline {
     out.position.addScaledVector(UP, CHASE_LIFT * zoom).addScaledVector(side, CHASE_SIDE)
     out.shiftX = 0
     out.shiftY = 0
+  }
+
+  const place = (pose: Pose, view: View): void => {
+    if (!view.split) return
+    const { region } = view
+    pose.position.sub(pose.look).divideScalar(region.height).add(pose.look)
+    pose.shiftX = pose.shiftX * region.width + 2 * (region.left + region.width / 2) - 1
+    pose.shiftY = pose.shiftY * region.height + 1 - 2 * (region.top + region.height / 2)
   }
 
   const push = (length: number, a: PoseFn, b: PoseFn, zoom = false, route = -1): Segment => {
@@ -409,6 +440,8 @@ export function createTimeline(network: NetworkLayout): Timeline {
       else blendPose(from, to, eased, frame.pose)
     }
 
+    place(frame.pose, view)
+
     const wideOpen = ramp(scroll, effects.open[0], effects.open[1])
     frame.paths = wideOpen
     frame.open = Math.max(1 - ramp(scroll, effects.landing[0], effects.landing[1]), wideOpen)
@@ -430,6 +463,7 @@ export function createTimeline(network: NetworkLayout): Timeline {
 
   const focus: Timeline['focus'] = (branch, view, out) => {
     holdPose(branch, out, view)
+    place(out, view)
   }
 
   return { length, sample, focus }

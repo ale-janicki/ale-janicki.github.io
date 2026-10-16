@@ -4,6 +4,7 @@ import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { profile } from '@/content/profile'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import { externalLinkProps } from '@/lib/externalLink'
+import { screenCenter } from '@/lib/synapse/html'
 import type { Frame } from '@/lib/synapse/timeline'
 import styles from './styles.module.css'
 
@@ -12,9 +13,6 @@ interface ContactPanelProps {
   nav: FlightNavConfig
   navIndex: number
 }
-
-const screenCenter = (_: unknown, __: unknown, size: { width: number; height: number }) =>
-  [size.width / 2, size.height / 2] as [number, number]
 
 export function ContactPanel({ frameRef, nav, navIndex }: ContactPanelProps) {
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => frame.contact)
