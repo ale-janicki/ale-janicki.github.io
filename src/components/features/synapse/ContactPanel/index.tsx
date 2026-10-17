@@ -1,8 +1,9 @@
 import type { RefObject } from 'react'
-import { Html } from '@react-three/drei'
+import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
-import { profile } from '@/content/profile'
 import { useFadeRef } from '@/hooks/useFadeRef'
+import { useContent } from '@/i18n/useContent'
+import { useLocale } from '@/i18n/useLocale'
 import { externalLinkProps } from '@/lib/externalLink'
 import { screenCenter } from '@/lib/synapse/html'
 import type { Frame } from '@/lib/synapse/timeline'
@@ -15,21 +16,23 @@ interface ContactPanelProps {
 }
 
 export function ContactPanel({ frameRef, nav, navIndex }: ContactPanelProps) {
+  const { messages } = useLocale()
+  const { profile } = useContent()
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => frame.contact)
   return (
-    <Html
+    <LocalizedHtml
       fullscreen
       calculatePosition={screenCenter}
       zIndexRange={[10, 0]}
       style={{ pointerEvents: 'none' }}
     >
       <div ref={ref} className={styles.layer}>
-        <section className={styles.panel} aria-label="Contact">
+        <section className={styles.panel} aria-label={messages.header.contact}>
           <div className={styles.identity}>
             <img
               className={styles.photo}
               src={profile.photo}
-              alt={`Portrait of ${profile.name}`}
+              alt={messages.header.portrait(profile.name)}
               width={460}
               height={460}
               decoding="async"
@@ -39,15 +42,11 @@ export function ContactPanel({ frameRef, nav, navIndex }: ContactPanelProps) {
               <p className={styles.title}>{profile.title}</p>
             </div>
           </div>
-          <p className={`mono ${styles.eyebrow}`}>Let&apos;s talk</p>
+          <p className={`mono ${styles.eyebrow}`}>{messages.contact.heading}</p>
           <ul className={styles.links}>
             {profile.contacts.map((contact) => (
               <li key={contact.label}>
-                <a
-                  className={styles.link}
-                  href={contact.href}
-                  {...externalLinkProps(contact.href)}
-                >
+                <a className={styles.link} href={contact.href} {...externalLinkProps(contact.href)}>
                   <span className={`mono ${styles.label}`}>{contact.label}</span>
                   <span className={styles.value}>{contact.value}</span>
                 </a>
@@ -57,6 +56,6 @@ export function ContactPanel({ frameRef, nav, navIndex }: ContactPanelProps) {
           <FlightNav nav={nav} index={navIndex} className={styles.pair} />
         </section>
       </div>
-    </Html>
+    </LocalizedHtml>
   )
 }

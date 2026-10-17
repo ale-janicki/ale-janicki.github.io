@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button'
+import { useLocale } from '@/i18n/useLocale'
 import type { Act } from '@/lib/synapse/length'
 import styles from './styles.module.css'
 
@@ -10,8 +11,9 @@ interface ProgressRailProps {
 }
 
 export function ProgressRail({ acts, active, length, onJump }: ProgressRailProps) {
+  const { messages } = useLocale()
   return (
-    <nav className={styles.rail} aria-label="Story progress">
+    <nav className={styles.rail} aria-label={messages.nav.progress}>
       <ol className={styles.list}>
         {acts.map((act, index) => (
           <li key={act.label}>

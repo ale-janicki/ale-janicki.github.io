@@ -1,5 +1,5 @@
 import type { CSSProperties, RefObject } from 'react'
-import { Html } from '@react-three/drei'
+import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import type { Vector3 } from 'three'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import { MAX_TECHS } from '@/lib/synapse/length'
@@ -30,7 +30,7 @@ export function TechLabel({
     (frame) => frame.techs[branch * MAX_TECHS + slot],
   )
   return (
-    <Html position={position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+    <LocalizedHtml position={position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
       <p
         ref={ref}
         className={`mono ${styles.label}`}
@@ -39,6 +39,6 @@ export function TechLabel({
       >
         {children}
       </p>
-    </Html>
+    </LocalizedHtml>
   )
 }

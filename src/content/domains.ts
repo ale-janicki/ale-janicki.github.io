@@ -1,33 +1,77 @@
+import type { Locale, Localized } from '@/i18n/locale'
+
+interface DomainSource {
+  id: string
+  name: Localized<string>
+  items: Localized<string>[]
+}
+
 interface Domain {
   id: string
   name: string
   items: string[]
 }
 
-export const domains: Domain[] = [
+const same = (name: string): Localized<string> => ({ en: name, 'pt-BR': name })
+
+const domainSources: DomainSource[] = [
   {
     id: 'frontend',
-    name: 'Frontend',
-    items: ['React', 'Next.js', 'React Native (Expo)', 'TypeScript'],
+    name: same('Frontend'),
+    items: [
+      same('React'),
+      same('Next.js'),
+      same('React Native (Expo)'),
+      same('TypeScript'),
+    ],
   },
   {
     id: 'ai',
-    name: 'AI',
-    items: ['Claude API', 'OpenAI API', 'Multi-agent systems', 'MCP', 'RAG / embeddings'],
+    name: { en: 'AI', 'pt-BR': 'IA' },
+    items: [
+      same('Claude API'),
+      same('OpenAI API'),
+      { en: 'Multi-agent systems', 'pt-BR': 'Sistemas multiagente' },
+      same('MCP'),
+      same('RAG / embeddings'),
+    ],
   },
   {
     id: 'backend',
-    name: 'Backend',
-    items: ['Java (Spring Boot)', 'Python (FastAPI)', 'Node.js', 'REST APIs'],
+    name: same('Backend'),
+    items: [
+      same('Java (Spring Boot)'),
+      same('Python (FastAPI)'),
+      same('Node.js'),
+      same('REST APIs'),
+    ],
   },
   {
     id: 'quality',
-    name: 'Quality',
-    items: ['Playwright', 'Vitest', 'PostHog', 'OpenTelemetry'],
+    name: { en: 'Quality', 'pt-BR': 'Qualidade' },
+    items: [
+      same('Playwright'),
+      same('Vitest'),
+      same('PostHog'),
+      same('OpenTelemetry'),
+    ],
   },
   {
     id: 'data-cloud',
-    name: 'Data & Cloud',
-    items: ['PostgreSQL', 'Supabase', 'Docker', 'AWS ECS / Lambda / S3'],
+    name: { en: 'Data & Cloud', 'pt-BR': 'Dados e Nuvem' },
+    items: [
+      same('PostgreSQL'),
+      same('Supabase'),
+      same('Docker'),
+      same('AWS ECS / Lambda / S3'),
+    ],
   },
 ]
+
+export function localizeDomains(locale: Locale): Domain[] {
+  return domainSources.map(({ name, items, ...rest }) => ({
+    ...rest,
+    name: name[locale],
+    items: items.map((item) => item[locale]),
+  }))
+}

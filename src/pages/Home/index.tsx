@@ -5,14 +5,16 @@ import { CssNetwork } from '@/components/layout/CssNetwork'
 import type { FlightNavConfig } from '@/components/layout/FlightNav'
 import { Header } from '@/components/layout/Header'
 import { ProgressRail } from '@/components/layout/ProgressRail'
-import { profile } from '@/content/profile'
-import { projects } from '@/content/projects'
+import { projectSources } from '@/content/projects'
 import { useFlightAct } from '@/hooks/useFlightAct'
 import { useFlightScroll } from '@/hooks/useFlightScroll'
 import { useFoldLayout } from '@/hooks/useFoldLayout'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useRenderMode } from '@/hooks/useRenderMode'
+import { useContent } from '@/i18n/useContent'
+import { useLocale } from '@/i18n/useLocale'
+import { en } from '@/i18n/en'
 import { FLIGHT_SECONDS, type FlightRequest } from '@/lib/synapse/flight'
 import {
   FIRST_BRANCH_ACT,
@@ -31,23 +33,34 @@ import styles from './styles.module.css'
 const Scene = lazy(() => import('@/components/features/synapse/Scene'))
 
 const LANDING_EPSILON = 0.001
-const branches = projects.slice(0, MAX_BRANCHES)
-const flightLength = timelineLength(branches.length)
-const acts = flightActs(branches.map((project) => project.name))
-const meetStop = acts[PRESENTATION_ACT].stop / flightLength
-const contactStop = acts[acts.length - 1].stop / flightLength
-const contactStart = acts[acts.length - 1].still[0]
+const branchNames = projectSources.slice(0, MAX_BRANCHES).map((project) => project.name.en)
+const flightLength = timelineLength(branchNames.length)
+const geometry = flightActs(branchNames, en.acts)
+const meetStop = geometry[PRESENTATION_ACT].stop / flightLength
+const contactStop = geometry[geometry.length - 1].stop / flightLength
+const contactStart = geometry[geometry.length - 1].still[0]
 const brandExit: [number, number] = [
   (contactStart - LENGTHS.toContact * 0.45) / flightLength,
   (contactStart + 0.1) / flightLength,
 ]
 const meetStill: [number, number] = [
-  acts[0].still[0] / flightLength,
-  acts[0].still[1] / flightLength,
+  geometry[0].still[0] / flightLength,
+  geometry[0].still[1] / flightLength,
 ]
 const trackHeight = `calc(${flightLength - PRELUDE + 1} * 100svh)`
 
 export function HomePage() {
+  const { messages } = useLocale()
+  const { profile, projects } = useContent()
+  const branches = useMemo(() => projects.slice(0, MAX_BRANCHES), [projects])
+  const acts = useMemo(
+    () =>
+      flightActs(
+        branches.map((project) => project.name),
+        messages.acts,
+      ),
+    [branches, messages],
+  )
   const [activeId, setActiveId] = useState<string | null>(null)
   const [sceneFailed, setSceneFailed] = useState(false)
   const mode = useRenderMode(sceneFailed)
@@ -124,7 +137,7 @@ export function HomePage() {
       setActiveId(null)
       flyTo(stop / flightLength, () => setActiveId(id))
     },
-    [activeId, flight, flyTo],
+    [activeId, flight, flyTo, branches, acts],
   )
   const handleSceneError = useCallback(() => setSceneFailed(true), [])
   const handleHome = useCallback(() => {
@@ -144,7 +157,7 @@ export function HomePage() {
   const navHidden = activeId !== null
   const nav = useMemo<FlightNavConfig>(
     () => ({ acts, length: flightLength, hidden: navHidden, onJump: scrollTo, onTop: handleHome }),
-    [navHidden, scrollTo, handleHome],
+    [acts, navHidden, scrollTo, handleHome],
   )
 
   const activeProject = projects.find((project) => project.id === activeId) ?? null

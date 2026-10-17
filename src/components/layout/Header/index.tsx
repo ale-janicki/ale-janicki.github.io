@@ -1,7 +1,9 @@
 import type { MouseEvent, RefObject } from 'react'
+import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ProjectsMenu } from '@/components/layout/ProjectsMenu'
 import { Button } from '@/components/ui/Button'
 import type { Profile } from '@/content/profile'
+import { useLocale } from '@/i18n/useLocale'
 import type { Project } from '@/types/project'
 import styles from './styles.module.css'
 
@@ -28,6 +30,7 @@ export function Header({
   onSelectProject,
   onOpenContact,
 }: HeaderProps) {
+  const { messages } = useLocale()
   const handleHome = (event: MouseEvent) => {
     event.preventDefault()
     onHome()
@@ -41,7 +44,7 @@ export function Header({
             <img
               className={styles.cardPhoto}
               src={profile.photo}
-              alt={`Portrait of ${profile.name}`}
+              alt={messages.header.portrait(profile.name)}
               width={460}
               height={460}
               decoding="async"
@@ -73,11 +76,12 @@ export function Header({
           {profile.name}
         </a>
       )}
-      <nav className={styles.actions} aria-label="Quick access">
+      <nav className={styles.actions} aria-label={messages.header.quickAccess}>
         <ProjectsMenu projects={projects} activeId={activeId} onSelect={onSelectProject} />
         <Button variant="secondary" size="sm" onClick={onOpenContact}>
-          Contact
+          {messages.header.contact}
         </Button>
+        <LanguageMenu />
       </nav>
     </header>
   )

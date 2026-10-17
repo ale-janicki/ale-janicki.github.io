@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Arrow } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
+import { useLocale } from '@/i18n/useLocale'
 import { trapTab } from '@/lib/trapTab'
 import type { Project } from '@/types/project'
 import styles from './styles.module.css'
@@ -13,6 +14,7 @@ interface ProjectPanelProps {
 }
 
 export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
+  const { messages } = useLocale()
   const panelRef = useRef<HTMLElement>(null)
   const closeRef = useRef<HTMLButtonElement>(null)
   const onCloseRef = useRef(onClose)
@@ -43,7 +45,7 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
       aria-modal="true"
       aria-labelledby="project-panel-title"
     >
-      <p className={`mono ${styles.eyebrow}`}>Branch</p>
+      <p className={`mono ${styles.eyebrow}`}>{messages.panel.branch}</p>
       <h2 id="project-panel-title" className={styles.name}>
         {project.name}
       </h2>
@@ -52,18 +54,18 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
       <p className={styles.description}>{project.description}</p>
       {project.problem && (
         <>
-          <h3 className={`mono ${styles.label}`}>Problem</h3>
+          <h3 className={`mono ${styles.label}`}>{messages.panel.problem}</h3>
           <p className={styles.detail}>{project.problem}</p>
         </>
       )}
       {project.built && (
         <>
-          <h3 className={`mono ${styles.label}`}>What I built</h3>
+          <h3 className={`mono ${styles.label}`}>{messages.panel.built}</h3>
           <p className={styles.detail}>{project.built}</p>
         </>
       )}
       {project.demoHint && <p className={styles.demo}>{project.demoHint}</p>}
-      <ul className={styles.stack} aria-label="Stack">
+      <ul className={styles.stack} aria-label={messages.projects.stack}>
         {project.stack.map((tech) => (
           <li key={tech}>
             <Chip>{tech}</Chip>
@@ -71,10 +73,10 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
         ))}
       </ul>
       <div className={styles.actions}>
-        <Button disabled>Launch demo — coming soon</Button>
+        <Button disabled>{messages.panel.launchDemo}</Button>
         <Button ref={closeRef} variant="secondary" size="lg" onClick={onBack}>
           <Arrow back />
-          Back
+          {messages.panel.back}
         </Button>
       </div>
     </aside>

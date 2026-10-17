@@ -1,9 +1,10 @@
 import { useEffect, useRef, type KeyboardEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
-import { Html } from '@react-three/drei'
+import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import type { Vector3 } from 'three'
 import { Button } from '@/components/ui/Button'
 import { useFadeRef } from '@/hooks/useFadeRef'
+import { useLocale } from '@/i18n/useLocale'
 import type { Milestone as MilestoneEntry } from '@/content/experience'
 import type { Frame } from '@/lib/synapse/timeline'
 import styles from './styles.module.css'
@@ -31,6 +32,7 @@ export function Milestone({
   onActivate,
   onPin,
 }: MilestoneProps) {
+  const { messages } = useLocale()
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => frame.tips)
   const sheetRef = useRef<HTMLDivElement>(null)
   const sheetOpen = isMobile && pinned
@@ -75,7 +77,7 @@ export function Milestone({
   }
 
   return (
-    <Html position={position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
+    <LocalizedHtml position={position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
       <div
         ref={ref}
         className={styles.milestone}
@@ -114,11 +116,11 @@ export function Milestone({
             <p className={styles.line}>{entry.line}</p>
             {details}
             <Button variant="ghost" size="sm" className={styles.close} onClick={() => onPin(null)}>
-              Close
+              {messages.milestone.close}
             </Button>
           </div>,
           document.body,
         )}
-    </Html>
+    </LocalizedHtml>
   )
 }

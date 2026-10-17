@@ -1,8 +1,9 @@
 import { useEffect, useState, type CSSProperties, type RefObject } from 'react'
-import { Html } from '@react-three/drei'
+import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
 import { useFadeRef } from '@/hooks/useFadeRef'
+import { useLocale } from '@/i18n/useLocale'
 import type { BranchGeometry } from '@/lib/synapse/buildNetwork'
 import { screenCenter } from '@/lib/synapse/html'
 import type { Fold } from '@/lib/synapse/region'
@@ -36,6 +37,7 @@ export function BranchCard({
   onSelect,
 }: BranchCardProps) {
   const { project, node } = branch
+  const { messages } = useLocale()
   const [hovered, setHovered] = useState(false)
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => (hidden ? 0 : frame.cards[index]))
 
@@ -67,7 +69,7 @@ export function BranchCard({
         <sphereGeometry args={[pointing ? 0.42 : 0.35, 12, 12]} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
-      <Html
+      <LocalizedHtml
         fullscreen={fold !== null}
         calculatePosition={fold ? screenCenter : undefined}
         zIndexRange={[10, 0]}
@@ -80,7 +82,7 @@ export function BranchCard({
         >
           <div className={styles.card}>
             <div className={styles.top}>
-              <p className={`mono ${styles.eyebrow}`}>{`branch 0${index + 1}`}</p>
+              <p className={`mono ${styles.eyebrow}`}>{messages.branchCard.branch(index + 1)}</p>
               {project.highlight && (
                 <p className={`mono ${styles.highlight}`}>{project.highlight}</p>
               )}
@@ -91,13 +93,13 @@ export function BranchCard({
             <dl className={styles.facts}>
               {project.built && (
                 <div className={styles.fact}>
-                  <dt className="mono">Built</dt>
+                  <dt className="mono">{messages.branchCard.built}</dt>
                   <dd>{project.built}</dd>
                 </div>
               )}
               {project.demoHint && (
                 <div className={styles.fact}>
-                  <dt className="mono">Demo</dt>
+                  <dt className="mono">{messages.branchCard.demo}</dt>
                   <dd>{demoText(project.demoHint)}</dd>
                 </div>
               )}
@@ -108,12 +110,12 @@ export function BranchCard({
               className={styles.open}
               onClick={() => onSelect(project.id)}
             >
-              Open {project.name}
+              {messages.branchCard.open(project.name)}
             </Button>
           </div>
           <FlightNav nav={nav} index={navIndex} className={styles.pair} />
         </div>
-      </Html>
+      </LocalizedHtml>
     </group>
   )
 }

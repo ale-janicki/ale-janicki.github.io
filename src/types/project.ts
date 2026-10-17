@@ -1,3 +1,5 @@
+import type { Localized } from '@/i18n/locale'
+
 type BranchVisual = 'cluster' | 'rhythm' | 'detect' | 'core'
 
 export interface Branch {
@@ -17,3 +19,10 @@ export interface Project {
   demoHint?: string
   branch: Branch
 }
+
+type ProjectText =
+  'name' | 'tagline' | 'description' | 'problem' | 'built' | 'highlight' | 'demoHint'
+
+export type ProjectSource = Omit<Project, ProjectText> & {
+  [K in ProjectText]?: Localized<string>
+} & { name: Localized<string>; tagline: Localized<string>; description: Localized<string> }

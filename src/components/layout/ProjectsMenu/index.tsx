@@ -8,6 +8,7 @@ import {
   type KeyboardEvent,
 } from 'react'
 import { Button } from '@/components/ui/Button'
+import { useLocale } from '@/i18n/useLocale'
 import type { Project } from '@/types/project'
 import styles from './styles.module.css'
 
@@ -18,6 +19,7 @@ interface ProjectsMenuProps {
 }
 
 export function ProjectsMenu({ projects, activeId, onSelect }: ProjectsMenuProps) {
+  const { messages } = useLocale()
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
@@ -103,14 +105,14 @@ export function ProjectsMenu({ projects, activeId, onSelect }: ProjectsMenuProps
         onClick={() => setOpen((value) => !value)}
         onKeyDown={handleButtonKey}
       >
-        Projects
+        {messages.header.projects}
       </Button>
       {open && (
         <ul
           id={menuId}
           className={styles.menu}
           role="menu"
-          aria-label="Projects"
+          aria-label={messages.header.projects}
           onKeyDown={handleMenuKey}
         >
           {projects.map((project, index) => (

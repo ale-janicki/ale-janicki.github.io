@@ -4,8 +4,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { Section } from '@/components/layout/Section'
 import { Button } from '@/components/ui/Button'
-import { experience } from '@/content/experience'
 import type { Profile } from '@/content/profile'
+import { useContent } from '@/i18n/useContent'
+import { useLocale } from '@/i18n/useLocale'
 import { LENGTHS, PRESENTATION_ACT } from '@/lib/synapse/length'
 import styles from './styles.module.css'
 
@@ -31,12 +32,13 @@ interface HeroProps {
 }
 
 function Identity({ profile }: { profile: Profile }) {
+  const { messages } = useLocale()
   return (
     <div className={styles.identity}>
       <img
         className={styles.photo}
         src={profile.photo}
-        alt={`Portrait of ${profile.name}`}
+        alt={messages.header.portrait(profile.name)}
         width={460}
         height={460}
         decoding="async"
@@ -50,11 +52,12 @@ function Identity({ profile }: { profile: Profile }) {
 }
 
 function Details({ profile }: { profile: Profile }) {
+  const { messages } = useLocale()
   return (
     <>
       <p className={styles.pitch}>{profile.pitch}</p>
       <p className={styles.now}>
-        <span className={`mono ${styles.nowLabel}`}>Now</span>
+        <span className={`mono ${styles.nowLabel}`}>{messages.hero.now}</span>
         {profile.current}
       </p>
       <dl className={styles.facts}>
@@ -77,6 +80,7 @@ function FlightHero({
   brandExit,
   onMeet,
 }: Omit<HeroProps, 'full'>) {
+  const { messages } = useLocale()
   const stageRef = useRef<HTMLDivElement>(null)
   const slotRef = useRef<HTMLDivElement>(null)
   const restRef = useRef<HTMLDivElement>(null)
@@ -179,14 +183,14 @@ function FlightHero({
   return (
     <div className={styles.pin}>
       <div ref={stageRef} className={styles.sticky} data-stage="landing" data-pair="off">
-        <Section id="top" label="Introduction" full mobileEnd reveal={false}>
+        <Section id="top" label={messages.hero.introduction} full mobileEnd reveal={false}>
           <div className={styles.cell}>
             <div className={styles.landing}>
               <div ref={slotRef} className={styles.slot} />
               <Button size="lg" className={styles.meet} onClick={onMeet}>
-                Meet {profile.name.split(' ')[0]}
+                {messages.hero.meet(profile.name.split(' ')[0])}
               </Button>
-              <p className={`mono ${styles.cue}`}>or scroll to follow the signal</p>
+              <p className={`mono ${styles.cue}`}>{messages.hero.cue}</p>
             </div>
             <div className={styles.details}>
               <div ref={restRef} className={styles.slot} />
@@ -201,12 +205,14 @@ function FlightHero({
 }
 
 export function Hero({ profile, full, brandRef, dockRef, nav, brandExit, onMeet }: HeroProps) {
+  const { messages } = useLocale()
+  const { experience } = useContent()
   if (!full) {
     return (
-      <Section id="top" label="Introduction" full={false} mobileEnd>
+      <Section id="top" label={messages.hero.introduction} full={false} mobileEnd>
         <Identity profile={profile} />
         <Details profile={profile} />
-        <ol className={styles.career} aria-label="Experience">
+        <ol className={styles.career} aria-label={messages.hero.experience}>
           {experience.map((entry) => (
             <li key={entry.id}>
               <span className={`mono ${styles.period}`}>{entry.period}</span>

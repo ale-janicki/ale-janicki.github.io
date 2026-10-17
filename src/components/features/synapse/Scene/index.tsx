@@ -10,16 +10,26 @@ import { Network } from '@/components/features/synapse/Network'
 import { Satellites } from '@/components/features/synapse/Satellites'
 import { TechLabel } from '@/components/features/synapse/TechLabel'
 import type { FlightNavConfig } from '@/components/layout/FlightNav'
-import { domains } from '@/content/domains'
-import { experience } from '@/content/experience'
+import { localizeProjects } from '@/content/projects'
+import { LocaleContext } from '@/i18n/LocaleContext'
+import { useContent } from '@/i18n/useContent'
+import { useLocale } from '@/i18n/useLocale'
 import { buildNetwork } from '@/lib/synapse/buildNetwork'
 import { domainRegion } from '@/lib/synapse/brain'
 import type { FlightRequest } from '@/lib/synapse/flight'
 import type { Fold } from '@/lib/synapse/region'
-import { BRAIN_ACT, FIRST_BRANCH_ACT, MAX_DOMAINS, MAX_MILESTONES } from '@/lib/synapse/length'
+import {
+  BRAIN_ACT,
+  FIRST_BRANCH_ACT,
+  MAX_BRANCHES,
+  MAX_DOMAINS,
+  MAX_MILESTONES,
+} from '@/lib/synapse/length'
 import { CAMERA_FOV, createFrame, createTimeline } from '@/lib/synapse/timeline'
 import type { Project } from '@/types/project'
 import styles from './styles.module.css'
+
+const STRUCTURE = localizeProjects('en').slice(0, MAX_BRANCHES)
 
 interface SceneProps {
   reducedMotion: boolean
@@ -50,13 +60,16 @@ export default function Scene({
   nav,
   onSelect,
 }: SceneProps) {
+  const localeValue = useLocale()
+  const { messages } = localeValue
+  const { domains, experience } = useContent()
   const network = useMemo(
-    () => buildNetwork(branches, isMobile, Math.min(experience.length, MAX_MILESTONES)),
-    [branches, isMobile],
+    () => buildNetwork(STRUCTURE, isMobile, Math.min(experience.length, MAX_MILESTONES)),
+    [isMobile, experience.length],
   )
   const domainAnchors = useMemo(
     () => domains.slice(0, MAX_DOMAINS).map((_, index) => domainRegion(index)),
-    [],
+    [domains],
   )
   const timeline = useMemo(() => createTimeline(network), [network])
   const frameRef = useRef(createFrame())
@@ -75,91 +88,93 @@ export default function Scene({
         gl={{ antialias: false, powerPreference: 'high-performance' }}
         onCreated={() => setReady(true)}
       >
-        <color attach="background" args={['#05060d']} />
-        <CameraRig
-          timeline={timeline}
-          frameRef={frameRef}
-          progressRef={progressRef}
-          flightRef={flightRef}
-          focus={focus}
-          fold={fold}
-          reducedMotion={reducedMotion}
-        />
-        <Network network={network} frameRef={frameRef} isMobile={isMobile} />
-        {ready && (
-          <>
-            {core >= 0 && !reducedMotion && (
-              <Satellites
-                frameRef={frameRef}
-                center={network.branches[core].node}
-                index={core}
-                color={network.branches[core].project.branch.color}
-                isMobile={isMobile}
-              />
-            )}
-            {network.branches.map((branch, index) => (
-              <BranchCard
-                key={branch.project.id}
-                branch={branch}
-                index={index}
+        <LocaleContext.Provider value={localeValue}>
+          <color attach="background" args={['#05060d']} />
+          <CameraRig
+            timeline={timeline}
+            frameRef={frameRef}
+            progressRef={progressRef}
+            flightRef={flightRef}
+            focus={focus}
+            fold={fold}
+            reducedMotion={reducedMotion}
+          />
+          <Network network={network} frameRef={frameRef} isMobile={isMobile} />
+          {ready && (
+            <>
+              {core >= 0 && !reducedMotion && (
+                <Satellites
+                  frameRef={frameRef}
+                  center={network.branches[core].node}
+                  index={core}
+                  color={network.branches[core].project.branch.color}
+                  isMobile={isMobile}
+                />
+              )}
+              {network.branches.map((branch, index) => (
+                <BranchCard
+                  key={branch.project.id}
+                  branch={{ ...branch, project: branches[index] }}
+                  index={index}
+                  frameRef={frameRef}
+                  fold={fold}
+                  hidden={activeId !== null}
+                  nav={nav}
+                  navIndex={index + FIRST_BRANCH_ACT}
+                  onSelect={onSelect}
+                />
+              ))}
+              {network.milestones.map((anchor, index) => (
+                <Milestone
+                  key={experience[index].id}
+                  position={anchor}
+                  entry={experience[index]}
+                  index={index}
+                  dimmed={focusedTip !== null && focusedTip !== index}
+                  pinned={pinnedTip === index}
+                  isMobile={isMobile}
+                  frameRef={frameRef}
+                  onActivate={setActiveTip}
+                  onPin={setPinnedTip}
+                />
+              ))}
+              {domainAnchors.map((anchor, index) => (
+                <DomainLabel
+                  key={domains[index].id}
+                  position={anchor}
+                  name={domains[index].name}
+                  items={domains[index].items}
+                  frameRef={frameRef}
+                />
+              ))}
+              {network.branches.map((branch, index) =>
+                branch.techs.map((tech, slot) => (
+                  <TechLabel
+                    key={`${branch.project.id}-${tech.label}`}
+                    position={tech.position}
+                    side={tech.side}
+                    branch={index}
+                    slot={slot}
+                    color={branch.project.branch.color}
+                    frameRef={frameRef}
+                  >
+                    {tech.label}
+                  </TechLabel>
+                )),
+              )}
+              <Caption
+                position={[0, -network.extent.y * 1.02, 0]}
                 frameRef={frameRef}
                 fold={fold}
-                hidden={activeId !== null}
                 nav={nav}
-                navIndex={index + FIRST_BRANCH_ACT}
-                onSelect={onSelect}
-              />
-            ))}
-            {network.milestones.map((anchor, index) => (
-              <Milestone
-                key={experience[index].id}
-                position={anchor}
-                entry={experience[index]}
-                index={index}
-                dimmed={focusedTip !== null && focusedTip !== index}
-                pinned={pinnedTip === index}
-                isMobile={isMobile}
-                frameRef={frameRef}
-                onActivate={setActiveTip}
-                onPin={setPinnedTip}
-              />
-            ))}
-            {domainAnchors.map((anchor, index) => (
-              <DomainLabel
-                key={domains[index].id}
-                position={anchor}
-                name={domains[index].name}
-                items={domains[index].items}
-                frameRef={frameRef}
-              />
-            ))}
-            {network.branches.map((branch, index) =>
-              branch.techs.map((tech, slot) => (
-                <TechLabel
-                  key={`${branch.project.id}-${tech.label}`}
-                  position={tech.position}
-                  side={tech.side}
-                  branch={index}
-                  slot={slot}
-                  color={branch.project.branch.color}
-                  frameRef={frameRef}
-                >
-                  {tech.label}
-                </TechLabel>
-              )),
-            )}
-            <Caption
-              position={[0, -network.extent.y * 1.02, 0]}
-              frameRef={frameRef}
-              fold={fold}
-              nav={nav}
-              navIndex={BRAIN_ACT}
-            >
-              Everything I build connects.
-            </Caption>
-            <ContactPanel frameRef={frameRef} nav={nav} navIndex={nav.acts.length - 1} />
-          </>
-        )}
+                navIndex={BRAIN_ACT}
+              >
+                {messages.caption}
+              </Caption>
+              <ContactPanel frameRef={frameRef} nav={nav} navIndex={nav.acts.length - 1} />
+            </>
+          )}
+        </LocaleContext.Provider>
       </Canvas>
     </div>
   )

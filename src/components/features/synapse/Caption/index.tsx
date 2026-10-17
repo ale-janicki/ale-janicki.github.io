@@ -1,5 +1,5 @@
 import type { RefObject } from 'react'
-import { Html } from '@react-three/drei'
+import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import { screenCenter } from '@/lib/synapse/html'
@@ -19,7 +19,7 @@ interface CaptionProps {
 export function Caption({ position, frameRef, fold, nav, navIndex, children }: CaptionProps) {
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => frame.caption)
   return (
-    <Html
+    <LocalizedHtml
       position={position}
       fullscreen={fold !== null}
       calculatePosition={fold ? screenCenter : undefined}
@@ -30,6 +30,6 @@ export function Caption({ position, frameRef, fold, nav, navIndex, children }: C
         <p>{children}</p>
         <FlightNav nav={nav} index={navIndex} className={styles.pair} />
       </div>
-    </Html>
+    </LocalizedHtml>
   )
 }

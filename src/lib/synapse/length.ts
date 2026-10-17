@@ -41,22 +41,29 @@ export interface Act {
   still: [number, number]
 }
 
-export function flightActs(names: string[]): Act[] {
+export interface ActLabels {
+  meet: string
+  you: string
+  brain: string
+  contact: string
+}
+
+export function flightActs(names: string[], labels: ActLabels): Act[] {
   const arrival = LENGTHS.landing + LENGTHS.intro
   const wideHoldStart = PRELUDE
   const firstEnter = wideHoldStart + LENGTHS.wideHold
   const perBranch = LENGTHS.enter + LENGTHS.hold
   const contactStart = firstEnter + perBranch * names.length + LENGTHS.toContact
   return [
-    { label: 'Meet', begin: 0, stop: 0, still: [0, LENGTHS.landing] },
+    { label: labels.meet, begin: 0, stop: 0, still: [0, LENGTHS.landing] },
     {
-      label: 'You',
+      label: labels.you,
       begin: arrival - 0.3,
       stop: arrival + 0.2,
       still: [arrival, arrival + LENGTHS.presentation],
     },
     {
-      label: 'Brain',
+      label: labels.brain,
       begin: PRELUDE - 0.5,
       stop: wideHoldStart + 0.4,
       still: [wideHoldStart, wideHoldStart + LENGTHS.wideHold],
@@ -71,7 +78,7 @@ export function flightActs(names: string[]): Act[] {
       }
     }),
     {
-      label: 'Contact',
+      label: labels.contact,
       begin: contactStart - LENGTHS.toContact * 0.5,
       stop: contactStart + 0.3,
       still: [contactStart, contactStart + LENGTHS.contactHold],
