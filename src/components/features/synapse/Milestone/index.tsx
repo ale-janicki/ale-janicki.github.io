@@ -1,4 +1,4 @@
-import { useEffect, useRef, type KeyboardEvent, type RefObject } from 'react'
+import { useEffect, useRef, type FocusEvent, type KeyboardEvent, type RefObject } from 'react'
 import { Arrow } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
 import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
@@ -38,6 +38,9 @@ export function Milestone({
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => frame.tips)
   const activate = () => onActivate(index)
   const release = () => onActivate(null)
+  const activateVisible = (event: FocusEvent<HTMLDivElement>) => {
+    if (event.currentTarget.matches(':focus-visible')) activate()
+  }
   const open = () => {
     if (!focused) onOpen(entry.id)
   }
@@ -87,7 +90,7 @@ export function Milestone({
             aria-label={`${entry.org}, ${entry.role}, ${entry.period}. ${entry.line}`}
             onPointerEnter={activate}
             onPointerLeave={release}
-            onFocus={activate}
+            onFocus={activateVisible}
             onBlur={release}
             onClick={open}
             onKeyDown={handleKeyDown}
