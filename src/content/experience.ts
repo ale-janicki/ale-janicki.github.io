@@ -59,7 +59,20 @@ const experienceSources: MilestoneSource[] = [
       'pt-BR':
         'Atuei com marketing direto em CRM, com foco em comunicação personalizada, conversão de leads e otimização da jornada do cliente por e-mail marketing e WhatsApp, usando o Salesforce Marketing Cloud.',
     },
-    details: { en: [], 'pt-BR': [] },
+    details: {
+      en: [
+        'Built email marketing journeys with a self-confirmation link that moved leads into the sales pipeline.',
+        'Ran on-demand WhatsApp sends for campaigns.',
+        'Helped implement a new WhatsApp campaign flow with conversations handled by an AI bot.',
+        'Helped with the newsletter and campaign copywriting.',
+      ],
+      'pt-BR': [
+        'Montei jornadas de e-mail marketing com link de autoconfirmação que levava o lead para o pipeline.',
+        'Fiz disparos de WhatsApp por demanda para campanhas.',
+        'Ajudei a implementar um novo fluxo de WhatsApp para campanhas, com a conversa conduzida por um bot de IA.',
+        'Ajudei na newsletter e no copywriting das campanhas.',
+      ],
+    },
   },
   {
     id: 'ef-admin',
@@ -67,10 +80,24 @@ const experienceSources: MilestoneSource[] = [
     role: { en: 'Administrative Assistant', 'pt-BR': 'Assistente Administrativo' },
     period: { en: 'Apr 2022 — Jul 2025', 'pt-BR': 'abr 2022 — jul 2025' },
     line: {
-      en: 'Office infrastructure and local IT support.',
-      'pt-BR': 'Infraestrutura do escritório e suporte local de TI.',
+      en: 'Ran the office infrastructure and local IT support: equipment, network, accounts and purchasing.',
+      'pt-BR':
+        'Cuidei da infraestrutura do escritório e do suporte de TI local: equipamentos, rede, acessos e compras.',
     },
-    details: { en: [], 'pt-BR': [] },
+    details: {
+      en: [
+        'Helped design the network for the new office, with its own Wi-Fi and a FortiGate firewall.',
+        'Helped install the new server during the office move.',
+        'Kept the company notebooks healthy and tracked assets and machines in spreadsheets.',
+        'Handled accounts and access, equipment and IT purchasing.',
+      ],
+      'pt-BR': [
+        'Ajudei a projetar a rede do escritório novo, com Wi-Fi próprio e firewall FortiGate.',
+        'Ajudei a instalar o novo servidor na mudança de escritório.',
+        'Cuidei da saúde dos notebooks e controlei ativos e máquinas em planilhas.',
+        'Cuidei de contas e acessos, equipamentos e compras de TI.',
+      ],
+    },
   },
   {
     id: 'freelance',
@@ -78,12 +105,14 @@ const experienceSources: MilestoneSource[] = [
     role: { en: 'Developer', 'pt-BR': 'Desenvolvedor' },
     period: { en: '2021 — 2022', 'pt-BR': '2021 — 2022' },
     line: {
-      en: 'React, Next.js and TailwindCSS interfaces on REST APIs.',
-      'pt-BR': 'Interfaces em React, Next.js e TailwindCSS sobre APIs REST.',
+      en: 'Built responsive landing pages in React, Next.js and TailwindCSS.',
+      'pt-BR': 'Criei landing pages responsivas em React, Next.js e TailwindCSS.',
     },
     details: {
-      en: ['REST APIs in Node.js and Python.'],
-      'pt-BR': ['APIs REST em Node.js e Python.'],
+      en: ['Integrated them with REST APIs, with occasional back-end work in Node.js and Python.'],
+      'pt-BR': [
+        'Integrei com APIs REST, com funcionalidades de back-end pontuais em Node.js e Python.',
+      ],
     },
   },
   {
@@ -99,7 +128,20 @@ const experienceSources: MilestoneSource[] = [
       'pt-BR':
         'Soldado da seção de informática, responsável pela manutenção da rede local, dos sistemas e dos equipamentos de TI.',
     },
-    details: { en: [], 'pt-BR': [] },
+    details: {
+      en: [
+        'Supported every computer in the unit.',
+        "Worked on network cabling, the unit's server and internal systems.",
+        'Kept the inventory of IT equipment.',
+        'Helped keep the internal network running and backed up, for reliable and secure data.',
+      ],
+      'pt-BR': [
+        'Dava suporte a todas as máquinas da OM.',
+        'Atuei em cabeamento de rede, no servidor e nos sistemas internos.',
+        'Mantive o inventário dos equipamentos de TI.',
+        'Ajudei a manter a operação e o backup da rede interna, garantindo confiabilidade e segurança dos dados.',
+      ],
+    },
   },
 ]
 
