@@ -44,6 +44,7 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="project-panel-title"
+      data-lenis-prevent
     >
       <p className={`mono ${styles.eyebrow}`}>{messages.panel.branch}</p>
       <h2 id="project-panel-title" className={styles.name}>

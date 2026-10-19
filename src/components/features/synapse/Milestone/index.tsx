@@ -98,7 +98,7 @@ export function Milestone({
             </p>
           </div>
           <div className={styles.expanded} role="group" aria-label={entry.org} inert={!focused}>
-            <div className={styles.scroll}>
+            <div className={styles.scroll} data-lenis-prevent>
               <p className={styles.fullLine}>{entry.line}</p>
               {entry.details.length > 0 && (
                 <ul className={styles.fullDetails}>
