@@ -169,15 +169,32 @@
 }
 
 .actions {
-  display: flex;
-  gap: var(--space-2);
+  --slot-gap: var(--space-2);
+  display: none;
+  gap: var(--slot-gap);
+
+  @media (min-width: 540px) {
+    display: flex;
+  }
 
   @media (max-width: 767px) {
-    gap: var(--space-1);
+    --slot-gap: var(--space-1);
   }
 
   @media (max-width: 359px) {
     margin-left: auto;
+  }
+}
+
+.compact {
+  --slot-gap: var(--space-1);
+  display: flex;
+  align-items: center;
+  gap: var(--slot-gap);
+  margin-left: auto;
+
+  @media (min-width: 540px) {
+    display: none;
   }
 }
 
@@ -228,4 +245,24 @@
 
 :global(:root[data-fold='columns']) .titleDot {
   display: none;
+}
+
+.contactSlot {
+  display: inline-flex;
+  max-width: 8rem;
+  overflow: hidden;
+  transition:
+    max-width 320ms cubic-bezier(0.4, 0, 0.2, 1),
+    margin 320ms cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 200ms ease;
+
+  &[data-hidden='true'] {
+    max-width: 0;
+    margin-right: calc(-1 * var(--slot-gap));
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }

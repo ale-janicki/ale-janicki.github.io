@@ -1,5 +1,9 @@
 .root {
   position: relative;
+
+  @media (max-width: 767px) {
+    position: static;
+  }
 }
 
 .menu {
@@ -19,6 +23,11 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   animation: menu-in 160ms ease both;
+
+  @media (max-width: 767px) {
+    top: calc(100% - var(--space-2));
+    right: var(--space-4);
+  }
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;

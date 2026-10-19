@@ -17,6 +17,7 @@ import { useLocale } from '@/i18n/useLocale'
 import { en } from '@/i18n/en'
 import { FLIGHT_SECONDS, type FlightRequest } from '@/lib/synapse/flight'
 import {
+  BRAIN_ACT,
   FIRST_BRANCH_ACT,
   LENGTHS,
   MAX_BRANCHES,
@@ -38,6 +39,7 @@ const flightLength = timelineLength(branchNames.length)
 const geometry = flightActs(branchNames, en.acts)
 const meetStop = geometry[PRESENTATION_ACT].stop / flightLength
 const contactStop = geometry[geometry.length - 1].stop / flightLength
+const heroEnd = geometry[BRAIN_ACT].still[0] / flightLength
 const contactStart = geometry[geometry.length - 1].still[0]
 const brandExit: [number, number] = [
   (contactStart - LENGTHS.toContact * 0.45) / flightLength,
@@ -96,10 +98,13 @@ export function HomePage() {
   }, [])
   const handleCloseMilestone = useCallback(() => setMilestoneId(null), [])
 
+  const [heroHidden, setHeroHidden] = useState(false)
   const flyTo = useCallback(
     (progress: number, onArrive?: () => void) => {
       if (flyingRef.current) return
       flyingRef.current = true
+      const crossesHero = Math.min(progressRef.current, progress) < heroEnd
+      if (crossesHero) setHeroHidden(true)
       const seconds = reducedMotion ? 0 : FLIGHT_SECONDS
       glideTo(progress, seconds)
       flightRef.current = {
@@ -108,6 +113,7 @@ export function HomePage() {
         onArrive: () => {
           settleAt(progress)
           flyingRef.current = false
+          if (crossesHero) setHeroHidden(false)
           onArrive?.()
         },
       }
@@ -202,6 +208,7 @@ export function HomePage() {
         projects={projects}
         activeId={activeId}
         flight={flight}
+        atContact={flight && act === acts.length - 1}
         brandRef={brandRef}
         dockRef={dockRef}
         onHome={handleHome}
@@ -209,7 +216,9 @@ export function HomePage() {
         onOpenContact={handleOpenContact}
       />
 
-      {flight && milestoneId === null && <ProgressRail acts={acts} active={act} length={flightLength} onJump={scrollTo} />}
+      {flight && milestoneId === null && (
+        <ProgressRail acts={acts} active={act} length={flightLength} onJump={scrollTo} />
+      )}
 
       <main className={styles.main}>
         <Hero
@@ -219,7 +228,8 @@ export function HomePage() {
           dockRef={dockRef}
           nav={nav}
           brandExit={brandExit}
-          covered={milestoneId !== null}
+          covered={milestoneId !== null || heroHidden}
+          quickCover={heroHidden}
           onMeet={handleMeet}
         />
         {flight ? (

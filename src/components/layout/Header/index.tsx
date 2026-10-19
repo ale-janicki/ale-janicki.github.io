@@ -1,4 +1,5 @@
 import type { MouseEvent, RefObject } from 'react'
+import { HeaderMenu } from '@/components/layout/HeaderMenu'
 import { LanguageMenu } from '@/components/layout/LanguageMenu'
 import { ProjectsMenu } from '@/components/layout/ProjectsMenu'
 import { Button } from '@/components/ui/Button'
@@ -12,6 +13,7 @@ interface HeaderProps {
   projects: Project[]
   activeId: string | null
   flight: boolean
+  atContact: boolean
   brandRef: RefObject<HTMLAnchorElement | null>
   dockRef: RefObject<HTMLSpanElement | null>
   onHome: () => void
@@ -24,6 +26,7 @@ export function Header({
   projects,
   activeId,
   flight,
+  atContact,
   brandRef,
   dockRef,
   onHome,
@@ -78,11 +81,21 @@ export function Header({
       )}
       <nav className={styles.actions} aria-label={messages.header.quickAccess}>
         <ProjectsMenu projects={projects} activeId={activeId} onSelect={onSelectProject} />
-        <Button variant="secondary" size="sm" onClick={onOpenContact}>
-          {messages.header.contact}
-        </Button>
+        <span className={styles.contactSlot} data-hidden={atContact} inert={atContact}>
+          <Button variant="secondary" size="sm" onClick={onOpenContact}>
+            {messages.header.contact}
+          </Button>
+        </span>
         <LanguageMenu />
       </nav>
+      <div className={styles.compact}>
+        <span className={styles.contactSlot} data-hidden={atContact} inert={atContact}>
+          <Button variant="secondary" size="sm" onClick={onOpenContact}>
+            {messages.header.contact}
+          </Button>
+        </span>
+        <HeaderMenu projects={projects} activeId={activeId} onSelectProject={onSelectProject} />
+      </div>
     </header>
   )
 }

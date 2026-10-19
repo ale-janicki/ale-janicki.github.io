@@ -11,6 +11,7 @@ export const ptBR: Messages = {
     quickAccess: 'Acesso rápido',
     projects: 'Projetos',
     language: 'Idioma',
+    menu: 'Menu',
     portrait: (name) => `Retrato de ${name}`,
   },
   acts: {

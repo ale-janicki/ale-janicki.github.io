@@ -19,6 +19,7 @@ const DOCK_PHOTO = 38
 const PAIR_ON = 0.9
 const PAIR_OFF = 0.3
 const COVER_MS = 300
+const QUICK_COVER_MS = 120
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 const smooth = (value: number) => value * value * (3 - 2 * value)
@@ -31,6 +32,7 @@ interface HeroProps {
   nav: FlightNavConfig
   brandExit: [number, number]
   covered: boolean
+  quickCover: boolean
   onMeet: () => void
 }
 
@@ -82,6 +84,7 @@ function FlightHero({
   nav,
   brandExit,
   covered,
+  quickCover,
   onMeet,
 }: Omit<HeroProps, 'full'>) {
   const { messages } = useLocale()
@@ -188,7 +191,7 @@ function FlightHero({
   useEffect(() => {
     const card = brandRef.current
     if (!card) return
-    const fade = reducedMotion ? 0 : COVER_MS
+    const fade = reducedMotion ? 0 : covered && quickCover ? QUICK_COVER_MS : COVER_MS
     card.style.transition = `opacity ${fade}ms ease, visibility 0s linear ${covered ? fade : 0}ms`
     card.style.opacity = covered ? '0' : ''
     card.style.visibility = covered ? 'hidden' : ''
@@ -197,7 +200,7 @@ function FlightHero({
       card.style.transition = ''
     }, fade)
     return () => window.clearTimeout(settle)
-  }, [brandRef, covered, reducedMotion])
+  }, [brandRef, covered, quickCover, reducedMotion])
 
   return (
     <div className={styles.pin}>
@@ -207,6 +210,7 @@ function FlightHero({
         data-stage="landing"
         data-pair="off"
         data-covered={covered}
+        data-quick={quickCover}
         inert={covered}
       >
         <Section id="top" label={messages.hero.introduction} full mobileEnd reveal={false}>
@@ -238,6 +242,7 @@ export function Hero({
   nav,
   brandExit,
   covered,
+  quickCover,
   onMeet,
 }: HeroProps) {
   const { messages } = useLocale()
@@ -268,6 +273,7 @@ export function Hero({
       nav={nav}
       brandExit={brandExit}
       covered={covered}
+      quickCover={quickCover}
       onMeet={onMeet}
     />
   )

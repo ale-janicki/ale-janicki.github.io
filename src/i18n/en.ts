@@ -9,6 +9,7 @@ export const en = {
     quickAccess: 'Quick access',
     projects: 'Projects',
     language: 'Language',
+    menu: 'Menu',
     portrait: (name: string) => `Portrait of ${name}`,
   },
   acts: {
