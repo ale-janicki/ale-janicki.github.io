@@ -26,19 +26,26 @@ const experienceSources: MilestoneSource[] = [
     role: { en: 'Full Stack Engineer (contractor)', 'pt-BR': 'Engenheiro Full Stack (PJ)' },
     period: { en: 'Sep 2025 — present', 'pt-BR': 'set 2025 — atual' },
     line: {
-      en: 'Multi-portal, multi-tenant, white-label platforms.',
-      'pt-BR': 'Plataformas multiportal, multi-tenant e white-label.',
+      en: 'Build multi-portal, multi-tenant, white-label platforms with React/TypeScript front ends and Java (Spring Boot) and Python (FastAPI) back ends.',
+      'pt-BR':
+        'Desenvolvo plataformas multi-portal, multi-tenant e white label, com React/TypeScript no front e Java (Spring Boot) e Python (FastAPI) no back.',
     },
     details: {
       en: [
-        'LLM-based PDF content extraction and async PDF generation (Puppeteer, S3).',
-        'Contributed to an AI operating system for companies with 16 parallel agents.',
-        'React Native/Expo + Supabase mobile apps, PostHog analytics and Playwright E2E.',
+        'Built LLM-based PDF content extraction and async PDF generation (Puppeteer, S3).',
+        'Contributed to an AI operating system for companies with 16 parallel agents, web and mobile in production.',
+        'Implemented financial calculation engines and AI-agent-generated reports with caching and versioning.',
+        'Shipped mobile apps in React Native/Expo + Supabase (RLS, edge functions, APNs push, SMS OTP).',
+        'Worked with Stripe payments (webhooks) and third-party APIs with circuit breakers.',
+        'Operate and debug AWS services (ECS, ALB, S3), and set up product analytics (PostHog) and Playwright E2E tests.',
       ],
       'pt-BR': [
-        'Extração de conteúdo de PDF com LLM e geração assíncrona de PDF (Puppeteer, S3).',
-        'Contribuí em um sistema operacional de IA para empresas com 16 agentes paralelos.',
-        'Apps mobile em React Native/Expo + Supabase, analytics com PostHog e E2E com Playwright.',
+        'Construí extração de conteúdo de PDFs com LLM e geração assíncrona de PDFs (Puppeteer, S3).',
+        'Contribuí num sistema operacional de IA para empresas com 16 agentes em paralelo, web e mobile em produção.',
+        'Implementei motores de cálculo financeiro e relatórios gerados por agentes de IA, com cache e versionamento.',
+        'Entreguei apps mobile em React Native/Expo + Supabase (RLS, edge functions, push APNs, OTP por SMS).',
+        'Trabalhei com pagamentos Stripe (webhooks) e APIs de terceiros com circuit breaker.',
+        'Opero e depuro serviços na AWS (ECS, ALB, S3) e instrumentei analytics de produto (PostHog) e testes E2E com Playwright.',
       ],
     },
   },
@@ -48,13 +55,11 @@ const experienceSources: MilestoneSource[] = [
     role: { en: 'Junior CRM Analyst', 'pt-BR': 'Analista de CRM Júnior' },
     period: { en: 'Jul 2025 — Sep 2025', 'pt-BR': 'jul 2025 — set 2025' },
     line: {
-      en: 'Email and WhatsApp campaigns in Salesforce Marketing Cloud.',
-      'pt-BR': 'Campanhas de e-mail e WhatsApp no Salesforce Marketing Cloud.',
+      en: 'Ran direct marketing in CRM, focused on personalized communication, lead conversion and customer journey optimization through email marketing and WhatsApp, using Salesforce Marketing Cloud.',
+      'pt-BR':
+        'Atuei com marketing direto em CRM, com foco em comunicação personalizada, conversão de leads e otimização da jornada do cliente por e-mail marketing e WhatsApp, usando o Salesforce Marketing Cloud.',
     },
-    details: {
-      en: ['Ran email and WhatsApp campaigns for lead conversion.'],
-      'pt-BR': ['Conduzi campanhas de e-mail e WhatsApp para conversão de leads.'],
-    },
+    details: { en: [], 'pt-BR': [] },
   },
   {
     id: 'ef-admin',
@@ -84,11 +89,15 @@ const experienceSources: MilestoneSource[] = [
   {
     id: 'army',
     org: { en: 'Brazilian Army', 'pt-BR': 'Exército Brasileiro' },
-    role: { en: 'Soldier, IT section', 'pt-BR': 'Soldado, seção de TI' },
+    role: {
+      en: 'Soldier, IT Section (2nd Supply Battalion)',
+      'pt-BR': 'Soldado, seção de TI (2º Batalhão de Suprimento)',
+    },
     period: { en: 'Mar 2020 — Jan 2021', 'pt-BR': 'mar 2020 — jan 2021' },
     line: {
-      en: "The battalion's local network, systems and IT equipment.",
-      'pt-BR': 'A rede local, os sistemas e os equipamentos de TI do batalhão.',
+      en: 'IT section soldier, responsible for maintaining the local network, systems and IT equipment.',
+      'pt-BR':
+        'Soldado da seção de informática, responsável pela manutenção da rede local, dos sistemas e dos equipamentos de TI.',
     },
     details: { en: [], 'pt-BR': [] },
   },
