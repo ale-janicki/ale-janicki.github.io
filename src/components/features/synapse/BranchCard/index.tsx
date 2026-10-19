@@ -42,6 +42,7 @@ export function BranchCard({
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => (hidden ? 0 : frame.cards[index]))
 
   const pointing = hovered && !hidden
+  const clickable = () => !hidden && frameRef.current.tips < 0.02
 
   useEffect(() => {
     if (!pointing) return
@@ -55,6 +56,7 @@ export function BranchCard({
     <group position={node}>
       <mesh
         onPointerOver={(event) => {
+          if (!clickable()) return
           event.stopPropagation()
           setHovered(true)
         }}
@@ -62,6 +64,7 @@ export function BranchCard({
           setHovered(false)
         }}
         onClick={(event) => {
+          if (!clickable()) return
           event.stopPropagation()
           onSelect(project.id)
         }}
