@@ -141,8 +141,7 @@
   }
 
   @media (hover: none) {
-    opacity: 0.8;
-    transform: none;
+    display: none;
   }
 
   .milestone[data-focused='true'] & {
@@ -289,4 +288,13 @@
 
 :global(:root[data-fold]) .milestone[data-focused='true'] {
   max-width: calc(100vw - var(--fold-left) - 2rem);
+}
+
+@media (hover: none) {
+  .milestone:not([data-focused='true']) .org::after {
+    content: '→';
+    margin-left: 0.35em;
+    font-size: 0.85em;
+    color: var(--color-accent-text);
+  }
 }
