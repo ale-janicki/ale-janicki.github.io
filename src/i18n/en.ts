@@ -18,6 +18,10 @@ export const en = {
     contact: 'Contact',
   },
   nav: {
+    stack: 'Stack',
+    previous: 'Previous',
+    start: 'Home',
+    nextShort: 'Next',
     story: 'Story navigation',
     progress: 'Story progress',
     back: 'Back: ',
@@ -57,6 +61,7 @@ export const en = {
     back: 'Back',
   },
   milestone: {
+    more: 'See details',
     back: 'Back',
   },
   caption: 'Everything I build connects.',

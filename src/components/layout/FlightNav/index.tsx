@@ -1,7 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/Button'
+import { useContent } from '@/i18n/useContent'
 import { useLocale } from '@/i18n/useLocale'
-import type { Act } from '@/lib/synapse/length'
+import { BRAIN_ACT, FIRST_BRANCH_ACT, PRESENTATION_ACT, type Act } from '@/lib/synapse/length'
 import styles from './styles.module.css'
 
 export interface FlightNavConfig {
@@ -35,9 +36,32 @@ export function Arrow({ back, up }: { back?: boolean; up?: boolean }) {
 
 export function FlightNav({ nav, index, className }: FlightNavProps) {
   const { messages } = useLocale()
+  const { profile } = useContent()
   const { acts, length, hidden, onJump, onTop } = nav
   const prev = index > 0 ? acts[index - 1] : null
   const next = index < acts.length - 1 ? acts[index + 1] : null
+  const onBranch = index >= FIRST_BRANCH_ACT && index < acts.length - 1
+  const nextIsContact = index + 1 === acts.length - 1
+  const backText =
+    index === BRAIN_ACT
+      ? profile.name.split(' ')[0]
+      : index === FIRST_BRANCH_ACT
+        ? messages.nav.stack
+        : onBranch
+          ? messages.nav.previous
+          : index === PRESENTATION_ACT
+            ? messages.nav.start
+            : index === acts.length - 1
+              ? messages.header.projects
+              : prev?.label
+  const nextText =
+    index === PRESENTATION_ACT
+      ? messages.nav.stack
+      : index === BRAIN_ACT
+        ? messages.header.projects
+        : onBranch && !nextIsContact
+          ? messages.nav.nextShort
+          : next?.label
   const [from, until] = acts[index].still
   const still = useMemo<[number, number]>(
     () => [from / length, until / length],
@@ -70,7 +94,7 @@ export function FlightNav({ nav, index, className }: FlightNavProps) {
           <Arrow back />
           <span className={styles.label}>
             <span className={styles.verb}>{messages.nav.back}</span>
-            {prev.label}
+            {backText}
           </span>
         </Button>
       )}
@@ -83,7 +107,7 @@ export function FlightNav({ nav, index, className }: FlightNavProps) {
         >
           <span className={styles.label}>
             <span className={styles.verb}>{messages.nav.next}</span>
-            {next.label}
+            {nextText}
           </span>
           <Arrow />
         </Button>

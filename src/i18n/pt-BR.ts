@@ -20,6 +20,10 @@ export const ptBR: Messages = {
     contact: 'Contato',
   },
   nav: {
+    stack: 'Stack',
+    previous: 'Anterior',
+    start: 'Início',
+    nextShort: 'Próximo',
     story: 'Navegação da história',
     progress: 'Progresso da história',
     back: 'Voltar: ',
@@ -59,6 +63,7 @@ export const ptBR: Messages = {
     back: 'Voltar',
   },
   milestone: {
+    more: 'Ver detalhes',
     back: 'Voltar',
   },
   caption: 'Tudo o que eu construo se conecta.',

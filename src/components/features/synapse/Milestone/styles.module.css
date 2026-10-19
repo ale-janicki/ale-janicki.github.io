@@ -59,7 +59,11 @@
     position: absolute;
     inset: -0.9rem -1.6rem -0.9rem -0.6rem;
     z-index: -1;
-    background: radial-gradient(closest-side, var(--color-backdrop-strong), var(--color-backdrop-clear));
+    background: radial-gradient(
+      closest-side,
+      var(--color-backdrop-strong),
+      var(--color-backdrop-clear)
+    );
   }
 
   .milestone[data-focused='true'] &::before {
@@ -119,38 +123,35 @@
   }
 }
 
-.more {
-  position: absolute;
-  top: calc(100% + var(--space-2));
-  right: 0;
-  z-index: 2;
-  display: none;
-  width: 16rem;
-  padding: var(--space-3);
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-solid);
+.cue {
+  margin-top: var(--space-1);
+  font-size: 0.625rem;
+  letter-spacing: 0.04em;
+  color: var(--color-accent-text);
+  opacity: 0;
+  transform: translateX(-0.25rem);
+  transition:
+    opacity 200ms,
+    transform 200ms;
 
-  .milestone:not([data-focused='true']):hover &,
-  .milestone:not([data-focused='true']):focus-visible & {
-    @media (min-width: 768px) {
-      display: block;
-    }
+  .header:hover &,
+  .header:focus-visible & {
+    opacity: 1;
+    transform: none;
   }
-}
 
-.line {
-  font-size: var(--text-xs);
-  line-height: 1.45;
-  color: var(--color-text);
-}
+  @media (hover: none) {
+    opacity: 0.8;
+    transform: none;
+  }
 
-.details {
-  margin-top: var(--space-2);
-  padding-left: var(--space-4);
-  font-size: 0.6875rem;
-  line-height: 1.45;
-  color: var(--color-text-muted);
+  .milestone[data-focused='true'] & {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+  }
 }
 
 :global(:root[data-fold]) .milestone {
@@ -175,10 +176,6 @@
 }
 
 :global(:root[data-fold]) .milestone:not([data-focused='true']) .role {
-  display: none;
-}
-
-:global(:root[data-fold]) .milestone .more {
   display: none;
 }
 

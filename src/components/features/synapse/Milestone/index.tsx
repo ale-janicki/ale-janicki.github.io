@@ -74,12 +74,7 @@ export function Milestone({
 
   return (
     <LocalizedHtml position={position} zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
-      <div
-        ref={ref}
-        className={styles.milestone}
-        inert={locked}
-        data-focused={focused}
-      >
+      <div ref={ref} className={styles.milestone} inert={locked} data-focused={focused}>
         <div className={styles.body} data-dimmed={dimmed}>
           <div
             ref={headerRef}
@@ -98,16 +93,9 @@ export function Milestone({
             <p className={`mono ${styles.period}`}>{entry.period}</p>
             <p className={styles.org}>{entry.org}</p>
             <p className={styles.role}>{entry.role}</p>
-            <div className={styles.more}>
-              <p className={styles.line}>{entry.line}</p>
-              {entry.details.length > 0 && (
-                <ul className={styles.details}>
-                  {entry.details.map((detail) => (
-                    <li key={detail}>{detail}</li>
-                  ))}
-                </ul>
-              )}
-            </div>
+            <p className={`mono ${styles.cue}`} aria-hidden="true">
+              {messages.milestone.more} →
+            </p>
           </div>
           <div className={styles.expanded} role="group" aria-label={entry.org} inert={!focused}>
             <div className={styles.scroll}>
