@@ -25,7 +25,7 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
 
   useEffect(() => {
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null
-    closeRef.current?.focus()
+    closeRef.current?.focus({ preventScroll: true })
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onCloseRef.current()
       else if (panelRef.current) trapTab(event, panelRef.current)
@@ -33,7 +33,7 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
     document.addEventListener('keydown', handleKey)
     return () => {
       document.removeEventListener('keydown', handleKey)
-      previous?.focus()
+      previous?.focus({ preventScroll: true })
     }
   }, [])
 

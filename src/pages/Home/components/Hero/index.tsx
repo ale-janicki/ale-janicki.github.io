@@ -6,6 +6,7 @@ import { Section } from '@/components/layout/Section'
 import { Button } from '@/components/ui/Button'
 import type { Profile } from '@/content/profile'
 import { useContent } from '@/i18n/useContent'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 import { useLocale } from '@/i18n/useLocale'
 import { LENGTHS, PRESENTATION_ACT } from '@/lib/synapse/length'
 import styles from './styles.module.css'
@@ -17,6 +18,7 @@ const LIFT_END = 0.7
 const DOCK_PHOTO = 38
 const PAIR_ON = 0.9
 const PAIR_OFF = 0.3
+const COVER_MS = 300
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value))
 const smooth = (value: number) => value * value * (3 - 2 * value)
@@ -28,6 +30,7 @@ interface HeroProps {
   dockRef: RefObject<HTMLSpanElement | null>
   nav: FlightNavConfig
   brandExit: [number, number]
+  covered: boolean
   onMeet: () => void
 }
 
@@ -78,9 +81,11 @@ function FlightHero({
   dockRef,
   nav,
   brandExit,
+  covered,
   onMeet,
 }: Omit<HeroProps, 'full'>) {
   const { messages } = useLocale()
+  const reducedMotion = useReducedMotion()
   const stageRef = useRef<HTMLDivElement>(null)
   const slotRef = useRef<HTMLDivElement>(null)
   const restRef = useRef<HTMLDivElement>(null)
@@ -180,9 +185,30 @@ function FlightHero({
     }
   }, [brandRef, dockRef, brandExit])
 
+  useEffect(() => {
+    const card = brandRef.current
+    if (!card) return
+    const fade = reducedMotion ? 0 : COVER_MS
+    card.style.transition = `opacity ${fade}ms ease, visibility 0s linear ${covered ? fade : 0}ms`
+    card.style.opacity = covered ? '0' : ''
+    card.style.visibility = covered ? 'hidden' : ''
+    card.inert = covered
+    const settle = window.setTimeout(() => {
+      card.style.transition = ''
+    }, fade)
+    return () => window.clearTimeout(settle)
+  }, [brandRef, covered, reducedMotion])
+
   return (
     <div className={styles.pin}>
-      <div ref={stageRef} className={styles.sticky} data-stage="landing" data-pair="off">
+      <div
+        ref={stageRef}
+        className={styles.sticky}
+        data-stage="landing"
+        data-pair="off"
+        data-covered={covered}
+        inert={covered}
+      >
         <Section id="top" label={messages.hero.introduction} full mobileEnd reveal={false}>
           <div className={styles.cell}>
             <div className={styles.landing}>
@@ -204,7 +230,16 @@ function FlightHero({
   )
 }
 
-export function Hero({ profile, full, brandRef, dockRef, nav, brandExit, onMeet }: HeroProps) {
+export function Hero({
+  profile,
+  full,
+  brandRef,
+  dockRef,
+  nav,
+  brandExit,
+  covered,
+  onMeet,
+}: HeroProps) {
   const { messages } = useLocale()
   const { experience } = useContent()
   if (!full) {
@@ -232,6 +267,7 @@ export function Hero({ profile, full, brandRef, dockRef, nav, brandExit, onMeet 
       dockRef={dockRef}
       nav={nav}
       brandExit={brandExit}
+      covered={covered}
       onMeet={onMeet}
     />
   )

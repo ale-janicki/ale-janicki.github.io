@@ -39,8 +39,11 @@ interface SceneProps {
   progressRef: RefObject<number>
   flightRef: RefObject<FlightRequest | null>
   activeId: string | null
+  milestoneId: string | null
   nav: FlightNavConfig
   onSelect: (id: string) => void
+  onOpenMilestone: (id: string) => void
+  onCloseMilestone: () => void
 }
 
 function focusIndexOf(activeId: string | null, branches: Project[]): number | null {
@@ -57,8 +60,11 @@ export default function Scene({
   progressRef,
   flightRef,
   activeId,
+  milestoneId,
   nav,
   onSelect,
+  onOpenMilestone,
+  onCloseMilestone,
 }: SceneProps) {
   const localeValue = useLocale()
   const { messages } = localeValue
@@ -75,9 +81,10 @@ export default function Scene({
   const frameRef = useRef(createFrame())
   const [ready, setReady] = useState(false)
   const [activeTip, setActiveTip] = useState<number | null>(null)
-  const [pinnedTip, setPinnedTip] = useState<number | null>(null)
-  const focusedTip = pinnedTip ?? activeTip
   const focus = focusIndexOf(activeId, branches)
+  const milestoneIndex = experience.findIndex((entry) => entry.id === milestoneId)
+  const milestoneFocus = milestoneIndex >= 0 ? milestoneIndex : null
+  const focusedTip = milestoneFocus ?? activeTip
   const core = network.branches.findIndex((branch) => branch.project.branch.visual === 'core')
 
   return (
@@ -86,6 +93,7 @@ export default function Scene({
         dpr={isMobile ? [1, 1.5] : [1, 1.75]}
         camera={{ fov: CAMERA_FOV, near: 0.1, far: 300, position: [0, 0, 8] }}
         gl={{ antialias: false, powerPreference: 'high-performance' }}
+        style={{ overflow: 'clip' }}
         onCreated={() => setReady(true)}
       >
         <LocaleContext.Provider value={localeValue}>
@@ -96,6 +104,7 @@ export default function Scene({
             progressRef={progressRef}
             flightRef={flightRef}
             focus={focus}
+            milestoneFocus={milestoneFocus}
             fold={fold}
             reducedMotion={reducedMotion}
           />
@@ -131,11 +140,12 @@ export default function Scene({
                   entry={experience[index]}
                   index={index}
                   dimmed={focusedTip !== null && focusedTip !== index}
-                  pinned={pinnedTip === index}
-                  isMobile={isMobile}
+                  focused={milestoneFocus === index}
+                  locked={milestoneFocus !== null && milestoneFocus !== index}
                   frameRef={frameRef}
                   onActivate={setActiveTip}
-                  onPin={setPinnedTip}
+                  onOpen={onOpenMilestone}
+                  onClose={onCloseMilestone}
                 />
               ))}
               {domainAnchors.map((anchor, index) => (

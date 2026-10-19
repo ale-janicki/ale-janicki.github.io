@@ -1,8 +1,8 @@
 import { useEffect, useRef, type KeyboardEvent, type RefObject } from 'react'
-import { createPortal } from 'react-dom'
+import { Arrow } from '@/components/layout/FlightNav'
+import { Button } from '@/components/ui/Button'
 import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import type { Vector3 } from 'three'
-import { Button } from '@/components/ui/Button'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import { useLocale } from '@/i18n/useLocale'
 import type { Milestone as MilestoneEntry } from '@/content/experience'
@@ -14,11 +14,12 @@ interface MilestoneProps {
   entry: MilestoneEntry
   index: number
   dimmed: boolean
-  pinned: boolean
-  isMobile: boolean
+  focused: boolean
+  locked: boolean
   frameRef: RefObject<Frame>
   onActivate: (index: number | null) => void
-  onPin: (index: number | null) => void
+  onOpen: (id: string) => void
+  onClose: () => void
 }
 
 export function Milestone({
@@ -26,54 +27,46 @@ export function Milestone({
   entry,
   index,
   dimmed,
-  pinned,
-  isMobile,
+  focused,
+  locked,
   frameRef,
   onActivate,
-  onPin,
+  onOpen,
+  onClose,
 }: MilestoneProps) {
   const { messages } = useLocale()
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => frame.tips)
-  const sheetRef = useRef<HTMLDivElement>(null)
-  const sheetOpen = isMobile && pinned
   const activate = () => onActivate(index)
   const release = () => onActivate(null)
-  const toggle = () => onPin(pinned ? null : index)
-  const details = entry.details.length > 0 && (
-    <ul className={styles.details}>
-      {entry.details.map((detail) => (
-        <li key={detail}>{detail}</li>
-      ))}
-    </ul>
-  )
+  const open = () => {
+    if (!focused) onOpen(entry.id)
+  }
+  const headerRef = useRef<HTMLDivElement>(null)
+  const backRef = useRef<HTMLButtonElement>(null)
+  const wasFocused = useRef(false)
 
   useEffect(() => {
-    if (!sheetOpen) return
-    const close = () => onPin(null)
-    const handlePointer = (event: PointerEvent) => {
-      const target = event.target as Node
-      if (sheetRef.current?.contains(target) || ref.current?.contains(target)) return
-      close()
+    if (focused) {
+      backRef.current?.focus({ preventScroll: true })
+    } else if (wasFocused.current) {
+      headerRef.current?.focus({ preventScroll: true })
     }
-    const handleKey = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      close()
-      ref.current?.focus()
+    wasFocused.current = focused
+  }, [focused])
+
+  useEffect(() => {
+    if (!focused) return
+    const handleEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
     }
-    document.addEventListener('pointerdown', handlePointer)
-    document.addEventListener('keydown', handleKey)
-    window.addEventListener('scroll', close, { passive: true })
-    return () => {
-      document.removeEventListener('pointerdown', handlePointer)
-      document.removeEventListener('keydown', handleKey)
-      window.removeEventListener('scroll', close)
-    }
-  }, [sheetOpen, onPin, ref])
+    document.addEventListener('keydown', handleEscape)
+    return () => document.removeEventListener('keydown', handleEscape)
+  }, [focused, onClose])
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!isMobile || (event.key !== 'Enter' && event.key !== ' ')) return
+    if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault()
-    toggle()
+    open()
   }
 
   return (
@@ -81,46 +74,58 @@ export function Milestone({
       <div
         ref={ref}
         className={styles.milestone}
-        tabIndex={0}
-        role={isMobile ? 'button' : 'group'}
-        aria-expanded={isMobile ? pinned : undefined}
-        aria-label={`${entry.org}, ${entry.role}, ${entry.period}. ${entry.line}`}
-        onPointerEnter={activate}
-        onPointerLeave={release}
-        onFocus={activate}
-        onBlur={release}
-        onClick={isMobile ? toggle : undefined}
-        onKeyDown={handleKeyDown}
+        inert={locked}
+        data-focused={focused}
       >
         <div className={styles.body} data-dimmed={dimmed}>
-          <p className={`mono ${styles.period}`}>{entry.period}</p>
-          <p className={styles.org}>{entry.org}</p>
-          <p className={styles.role}>{entry.role}</p>
-          <div className={styles.more}>
-            <p className={styles.line}>{entry.line}</p>
-            {details}
-          </div>
-        </div>
-      </div>
-      {sheetOpen &&
-        createPortal(
           <div
-            ref={sheetRef}
-            className={styles.sheet}
-            role="dialog"
-            aria-label={`${entry.org}, ${entry.role}`}
+            ref={headerRef}
+            className={styles.header}
+            tabIndex={locked || focused ? -1 : 0}
+            role="button"
+            aria-expanded={focused}
+            aria-label={`${entry.org}, ${entry.role}, ${entry.period}. ${entry.line}`}
+            onPointerEnter={activate}
+            onPointerLeave={release}
+            onFocus={activate}
+            onBlur={release}
+            onClick={open}
+            onKeyDown={handleKeyDown}
           >
             <p className={`mono ${styles.period}`}>{entry.period}</p>
             <p className={styles.org}>{entry.org}</p>
-            <p className={styles.sheetRole}>{entry.role}</p>
-            <p className={styles.line}>{entry.line}</p>
-            {details}
-            <Button variant="ghost" size="sm" className={styles.close} onClick={() => onPin(null)}>
-              {messages.milestone.close}
-            </Button>
-          </div>,
-          document.body,
-        )}
+            <p className={styles.role}>{entry.role}</p>
+            <div className={styles.more}>
+              <p className={styles.line}>{entry.line}</p>
+              {entry.details.length > 0 && (
+                <ul className={styles.details}>
+                  {entry.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+          <div className={styles.expanded} role="group" aria-label={entry.org} inert={!focused}>
+            <div className={styles.scroll}>
+              <p className={styles.fullLine}>{entry.line}</p>
+              {entry.details.length > 0 && (
+                <ul className={styles.fullDetails}>
+                  {entry.details.map((detail) => (
+                    <li key={detail}>{detail}</li>
+                  ))}
+                </ul>
+              )}
+              <div className={styles.actions}>
+                <Button ref={backRef} variant="secondary" size="lg" onClick={onClose}>
+                  <Arrow back />
+                  {messages.milestone.back}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </LocalizedHtml>
   )
 }

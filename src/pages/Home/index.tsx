@@ -62,6 +62,7 @@ export function HomePage() {
     [branches, messages],
   )
   const [activeId, setActiveId] = useState<string | null>(null)
+  const [milestoneId, setMilestoneId] = useState<string | null>(null)
   const [sceneFailed, setSceneFailed] = useState(false)
   const mode = useRenderMode(sceneFailed)
   const isMobile = useIsMobile()
@@ -77,7 +78,7 @@ export function HomePage() {
   const { scrollTo, glideTo, settleAt } = useFlightScroll(
     progressRef,
     flight,
-    activeId !== null,
+    activeId !== null || milestoneId !== null,
     reducedMotion,
   )
   const act = useFlightAct(progressRef, acts, flightLength, flight)
@@ -85,9 +86,15 @@ export function HomePage() {
   const returnRef = useRef<number | null>(null)
   const handleSelect = useCallback((id: string) => {
     returnRef.current = null
+    setMilestoneId(null)
     setActiveId(id)
   }, [])
   const handleCloseProject = useCallback(() => setActiveId(null), [])
+  const handleOpenMilestone = useCallback((id: string) => {
+    setActiveId(null)
+    setMilestoneId(id)
+  }, [])
+  const handleCloseMilestone = useCallback(() => setMilestoneId(null), [])
 
   const flyTo = useCallback(
     (progress: number, onArrive?: () => void) => {
@@ -110,6 +117,7 @@ export function HomePage() {
 
   const handleOpenContact = useCallback(() => {
     setActiveId(null)
+    setMilestoneId(null)
     if (!flight) {
       document
         .getElementById('contact')
@@ -121,6 +129,7 @@ export function HomePage() {
 
   const handleSelectProject = useCallback(
     (id: string) => {
+      setMilestoneId(null)
       const index = branches.findIndex((project) => project.id === id)
       if (!flight || index < 0) {
         setActiveId(id)
@@ -142,6 +151,7 @@ export function HomePage() {
   const handleSceneError = useCallback(() => setSceneFailed(true), [])
   const handleHome = useCallback(() => {
     setActiveId(null)
+    setMilestoneId(null)
     if (progressRef.current < LANDING_EPSILON) return
     flyTo(0)
   }, [flyTo])
@@ -154,7 +164,7 @@ export function HomePage() {
   }, [flight, flyTo])
   const handleMeet = useCallback(() => scrollTo(meetStop, meetStill), [scrollTo])
 
-  const navHidden = activeId !== null
+  const navHidden = activeId !== null || milestoneId !== null
   const nav = useMemo<FlightNavConfig>(
     () => ({ acts, length: flightLength, hidden: navHidden, onJump: scrollTo, onTop: handleHome }),
     [acts, navHidden, scrollTo, handleHome],
@@ -177,8 +187,11 @@ export function HomePage() {
               progressRef={progressRef}
               flightRef={flightRef}
               activeId={activeId}
+              milestoneId={milestoneId}
               nav={nav}
               onSelect={handleSelect}
+              onOpenMilestone={handleOpenMilestone}
+              onCloseMilestone={handleCloseMilestone}
             />
           </Suspense>
         </ErrorBoundary>
@@ -196,7 +209,7 @@ export function HomePage() {
         onOpenContact={handleOpenContact}
       />
 
-      {flight && <ProgressRail acts={acts} active={act} length={flightLength} onJump={scrollTo} />}
+      {flight && milestoneId === null && <ProgressRail acts={acts} active={act} length={flightLength} onJump={scrollTo} />}
 
       <main className={styles.main}>
         <Hero
@@ -206,6 +219,7 @@ export function HomePage() {
           dockRef={dockRef}
           nav={nav}
           brandExit={brandExit}
+          covered={milestoneId !== null}
           onMeet={handleMeet}
         />
         {flight ? (

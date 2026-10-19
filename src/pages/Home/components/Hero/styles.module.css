@@ -116,6 +116,25 @@
   top: 0;
   height: 100svh;
   pointer-events: none;
+  transition:
+    opacity 300ms ease,
+    visibility 0s;
+
+  &[data-covered='true'] {
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 300ms ease,
+      visibility 0s linear 300ms;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: none;
+
+    &[data-covered='true'] {
+      transition: none;
+    }
+  }
 }
 
 .pitch {

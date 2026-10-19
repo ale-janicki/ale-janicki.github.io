@@ -25,6 +25,7 @@ interface CameraRigProps {
   progressRef: RefObject<number>
   flightRef: RefObject<FlightRequest | null>
   focus: number | null
+  milestoneFocus: number | null
   fold: Fold | null
   reducedMotion: boolean
 }
@@ -47,18 +48,22 @@ export function CameraRig({
   progressRef,
   flightRef,
   focus,
+  milestoneFocus,
   fold,
   reducedMotion,
 }: CameraRigProps) {
   const state = useRef({
     progress: 0,
     blend: 0,
+    milestoneBlend: 0,
     pointerX: 10,
     pointerY: 10,
     smoothX: 0,
     smoothY: 0,
     focus: null as number | null,
     lastFocus: null as number | null,
+    milestone: null as number | null,
+    lastMilestone: null as number | null,
     fold: null as Fold | null,
     sized: { width: 0, height: 0, fold: null as Fold | null },
     focusPose: createPose(),
@@ -88,6 +93,11 @@ export function CameraRig({
     state.current.focus = focus
     if (focus !== null) state.current.lastFocus = focus
   }, [focus])
+
+  useEffect(() => {
+    state.current.milestone = milestoneFocus
+    if (milestoneFocus !== null) state.current.lastMilestone = milestoneFocus
+  }, [milestoneFocus])
 
   useEffect(() => {
     state.current.fold = fold
@@ -169,6 +179,10 @@ export function CameraRig({
     else s.progress = MathUtils.damp(s.progress, progressRef.current, PROGRESS_DAMPING, dt)
     frame.time += reducedMotion ? dt * CALM_TIME_SCALE : dt
     s.blend = reducedMotion ? focusTarget : MathUtils.damp(s.blend, focusTarget, 2.6, dt)
+    const milestoneTarget = s.milestone !== null ? 1 : 0
+    s.milestoneBlend = reducedMotion
+      ? milestoneTarget
+      : MathUtils.damp(s.milestoneBlend, milestoneTarget, 2.6, dt)
     timeline.sample(s.progress, s.view, frame)
 
     const lastFocus = s.lastFocus
@@ -182,6 +196,15 @@ export function CameraRig({
       for (let i = 0; i < frame.cards.length; i++) frame.cards[i] *= 1 - eased
       frame.hero.fill(-1)
       frame.techs.fill(0)
+    }
+
+    const lastMilestone = s.lastMilestone
+    if (s.milestoneBlend > 0.001 && lastMilestone !== null) {
+      const eased = s.milestoneBlend * s.milestoneBlend * (3 - 2 * s.milestoneBlend)
+      timeline.focusMilestone(lastMilestone, s.view, s.focusPose)
+      blendPose(frame.pose, s.focusPose, eased, frame.pose)
+      frame.tips = MathUtils.lerp(frame.tips, 1, eased)
+      for (let i = 0; i < frame.cards.length; i++) frame.cards[i] *= 1 - eased
     }
 
     if (s.flying && s.request) {

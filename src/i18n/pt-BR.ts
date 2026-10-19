@@ -59,7 +59,7 @@ export const ptBR: Messages = {
     back: 'Voltar',
   },
   milestone: {
-    close: 'Fechar',
+    back: 'Voltar',
   },
   caption: 'Tudo o que eu construo se conecta.',
 }

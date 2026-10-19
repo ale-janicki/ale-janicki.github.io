@@ -57,7 +57,7 @@ export const en = {
     back: 'Back',
   },
   milestone: {
-    close: 'Close',
+    back: 'Back',
   },
   caption: 'Everything I build connects.',
 }

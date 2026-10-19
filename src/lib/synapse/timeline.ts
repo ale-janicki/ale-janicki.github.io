@@ -20,6 +20,11 @@ const WIDE_MARGIN = 0.94
 const UP = new Vector3(0, 1, 0)
 const HERO_DISTANCE = 3
 const HERO_COLUMN = 0.7
+const FOCUS_DISTANCE = 1.7
+const FOCUS_COLUMN = 0.3
+const FOCUS_ROW = 0.3
+const FOCUS_COLUMN_MOBILE = 0.08
+const FOCUS_ROW_MOBILE = 0.18
 const HOLD_COLUMN = 0.27
 const LANDING_COLUMN = 0.75
 const TEXT_RIGHT = 592
@@ -94,6 +99,7 @@ export interface Timeline {
   length: number
   sample: (progress: number, view: View, frame: Frame) => void
   focus: (branch: number, view: View, out: Pose) => void
+  focusMilestone: (index: number, view: View, out: Pose) => void
 }
 
 export function createPose(): Pose {
@@ -164,7 +170,7 @@ export function blendPose(a: Pose, b: Pose, amount: number, out: Pose): void {
 }
 
 export function createTimeline(network: NetworkLayout): Timeline {
-  const { branches, extent, me } = network
+  const { branches, extent, me, milestones } = network
   const segments: Segment[] = []
   const from = createPose()
   const to = createPose()
@@ -466,5 +472,14 @@ export function createTimeline(network: NetworkLayout): Timeline {
     place(out, view)
   }
 
-  return { length, sample, focus }
+  const focusMilestone: Timeline['focusMilestone'] = (index, view, out) => {
+    const landscape = beside(view)
+    out.look.copy(milestones[index])
+    out.position.copy(milestones[index]).addScaledVector(HERO_VIEW, FOCUS_DISTANCE)
+    out.shiftX = columnShift(view, landscape ? FOCUS_COLUMN : FOCUS_COLUMN_MOBILE)
+    out.shiftY = 1 - 2 * (landscape ? FOCUS_ROW : FOCUS_ROW_MOBILE)
+    place(out, view)
+  }
+
+  return { length, sample, focus, focusMilestone }
 }
