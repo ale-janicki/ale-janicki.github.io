@@ -66,11 +66,6 @@ const profileSource: ProfileSource = {
   ],
   contacts: [
     {
-      label: 'GitHub',
-      value: 'github.com/ale-janicki',
-      href: 'https://github.com/ale-janicki',
-    },
-    {
       label: 'LinkedIn',
       value: 'linkedin.com/in/alejanicki',
       href: 'https://www.linkedin.com/in/alejanicki',
@@ -79,6 +74,11 @@ const profileSource: ProfileSource = {
       label: 'Email',
       value: 'alessandrojanicki@gmail.com',
       href: 'mailto:alessandrojanicki@gmail.com',
+    },
+    {
+      label: 'GitHub',
+      value: 'github.com/ale-janicki',
+      href: 'https://github.com/ale-janicki',
     },
   ],
 }
