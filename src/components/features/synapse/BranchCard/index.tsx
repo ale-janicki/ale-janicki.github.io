@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type RefObject } from 'react'
+import type { CSSProperties, RefObject } from 'react'
 import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
 import { Button } from '@/components/ui/Button'
@@ -38,40 +38,10 @@ export function BranchCard({
 }: BranchCardProps) {
   const { project, node } = branch
   const { messages } = useLocale()
-  const [hovered, setHovered] = useState(false)
   const ref = useFadeRef<HTMLDivElement>(frameRef, (frame) => (hidden ? 0 : frame.cards[index]))
-
-  const pointing = hovered && !hidden
-  const clickable = () => !hidden && frameRef.current.tips < 0.02
-
-  useEffect(() => {
-    if (!pointing) return
-    document.body.style.cursor = 'pointer'
-    return () => {
-      document.body.style.cursor = ''
-    }
-  }, [pointing])
 
   return (
     <group position={node}>
-      <mesh
-        onPointerOver={(event) => {
-          if (!clickable()) return
-          event.stopPropagation()
-          setHovered(true)
-        }}
-        onPointerOut={() => {
-          setHovered(false)
-        }}
-        onClick={(event) => {
-          if (!clickable()) return
-          event.stopPropagation()
-          onSelect(project.id)
-        }}
-      >
-        <sphereGeometry args={[pointing ? 0.42 : 0.35, 12, 12]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
       <LocalizedHtml
         fullscreen={fold !== null}
         calculatePosition={fold ? screenCenter : undefined}
