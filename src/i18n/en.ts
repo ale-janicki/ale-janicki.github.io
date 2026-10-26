@@ -58,7 +58,8 @@ export const en = {
     branch: 'Branch',
     problem: 'Problem',
     built: 'What I built',
-    launchDemo: 'Launch demo — coming soon',
+    launchDemo: 'Launch demo',
+    demoSoon: 'Launch demo — coming soon',
     back: 'Back',
   },
   milestone: {

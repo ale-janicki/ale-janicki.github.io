@@ -60,7 +60,8 @@ export const ptBR: Messages = {
     branch: 'Ramo',
     problem: 'Problema',
     built: 'O que eu construí',
-    launchDemo: 'Abrir demo — em breve',
+    launchDemo: 'Abrir demo',
+    demoSoon: 'Abrir demo — em breve',
     back: 'Voltar',
   },
   milestone: {

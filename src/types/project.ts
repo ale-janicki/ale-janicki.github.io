@@ -17,6 +17,7 @@ export interface Project {
   built?: string
   highlight?: string
   demoHint?: string
+  demoUrl?: string
   branch: Branch
 }
 

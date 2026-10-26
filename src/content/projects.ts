@@ -58,6 +58,12 @@ export const projectSources: ProjectSource[] = [
         'Detecção e rastreamento ao vivo que contam as baterias cruzando uma linha, um motor de passo no Arduino que gira para um lado quando detecta uma bateria e para o outro quando não, e um back end em Python para usuários, depósitos e trocas de prêmios, com front end em Next.js.',
     },
     stack: ['Python', 'YOLOv8', 'OpenCV', 'Arduino', 'Next.js', 'TypeScript'],
+    demoHint: {
+      en: 'Demo: log in as a visitor, deposit batteries and watch the points add up. Front end only, data resets on reload.',
+      'pt-BR':
+        'Demo: entre como visitante, deposite pilhas e veja os pontos somarem. Só o front end, os dados reiniciam ao recarregar.',
+    },
+    demoUrl: 'https://ale-janicki.github.io/tcc-frontend/',
     branch: { color: '#a3e635', visual: 'detect' },
   },
   {
