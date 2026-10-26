@@ -38,6 +38,12 @@ export const projectSources: ProjectSource[] = [
     stack: ['Python', 'FastAPI', 'asyncio', 'GCP', 'Supabase'],
     built: { en: 'Isolated and encrypted keys.', 'pt-BR': 'Chaves isoladas e criptografadas.' },
     highlight: { en: 'Designed to run 24/7', 'pt-BR': 'Feito para rodar 24/7' },
+    demoHint: {
+      en: 'Demo: watch the bot trade on paper with live Binance prices. Front end only, data stays in your browser.',
+      'pt-BR':
+        'Demo: veja o bot operar em modo simulado com preços reais da Binance. Só o front end, os dados ficam no seu navegador.',
+    },
+    demoUrl: 'https://ale-janicki.github.io/sir-earn-crypto-demo/',
     branch: { color: '#e255c8', visual: 'rhythm' },
   },
   {
