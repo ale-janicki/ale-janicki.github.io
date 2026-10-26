@@ -1,7 +1,7 @@
 import type { CSSProperties, RefObject } from 'react'
 import { LocalizedHtml } from '@/components/features/synapse/LocalizedHtml'
 import { FlightNav, type FlightNavConfig } from '@/components/layout/FlightNav'
-import { Button } from '@/components/ui/Button'
+import { Button, LinkButton } from '@/components/ui/Button'
 import { useFadeRef } from '@/hooks/useFadeRef'
 import { useLocale } from '@/i18n/useLocale'
 import type { BranchGeometry } from '@/lib/synapse/buildNetwork'
@@ -77,14 +77,25 @@ export function BranchCard({
                 </div>
               )}
             </dl>
-            <Button
-              variant="secondary"
-              size="sm"
-              className={styles.open}
-              onClick={() => onSelect(project.id)}
-            >
-              {messages.branchCard.open(project.name)}
-            </Button>
+            {project.demoUrl ? (
+              <LinkButton
+                href={project.demoUrl}
+                variant="secondary"
+                size="sm"
+                className={styles.open}
+              >
+                {messages.branchCard.open(project.name)}
+              </LinkButton>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                className={styles.open}
+                onClick={() => onSelect(project.id)}
+              >
+                {messages.branchCard.open(project.name)}
+              </Button>
+            )}
           </div>
           <FlightNav nav={nav} index={navIndex} className={styles.pair} />
         </div>

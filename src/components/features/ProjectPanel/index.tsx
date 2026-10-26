@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Arrow } from '@/components/layout/FlightNav'
-import { Button } from '@/components/ui/Button'
-import buttonStyles from '@/components/ui/Button/styles.module.css'
+import { Button, LinkButton } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { useLocale } from '@/i18n/useLocale'
 import { trapTab } from '@/lib/trapTab'
@@ -76,14 +75,7 @@ export function ProjectPanel({ project, onClose, onBack }: ProjectPanelProps) {
       </ul>
       <div className={styles.actions}>
         {project.demoUrl ? (
-          <a
-            className={`${buttonStyles.button} ${buttonStyles.primary} ${buttonStyles.md} ${styles.demoLink}`}
-            href={project.demoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {messages.panel.launchDemo}
-          </a>
+          <LinkButton href={project.demoUrl}>{messages.panel.launchDemo}</LinkButton>
         ) : (
           <Button disabled>{messages.panel.demoSoon}</Button>
         )}

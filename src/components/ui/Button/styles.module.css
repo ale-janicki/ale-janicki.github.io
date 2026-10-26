@@ -8,6 +8,7 @@
   font-family: var(--font-sans);
   font-weight: 500;
   cursor: pointer;
+  text-decoration: none;
   transition:
     background 150ms,
     border-color 150ms,
